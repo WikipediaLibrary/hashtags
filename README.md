@@ -1,8 +1,8 @@
-#Hashtags
+# Hashtags
 
 This tool is a rewrite of the Hatnote Hashtags tool.
 
-##Differences
+## Differences
 
 The tool should do most if not all of what the previous tool did but with some changes and improvements:
 
