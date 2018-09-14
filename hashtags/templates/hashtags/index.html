@@ -1,0 +1,95 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="utf-8">
+  <title>Wikipedia edits by hashtag</title>
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <link rel="stylesheet" href="{% static "hashtags/css/normalize.css" %}">
+  <link rel="stylesheet" href="{% static "hashtags/css/skeleton.css" %}">
+  <link rel="stylesheet" href="{% static "hashtags/css/style.css" %}">
+
+  <script type="text/javascript" src="{% static "hashtags/js/jquery.js" %}"></script>
+  <script type="text/javascript" src="{% static "hashtags/js/search.js" %}"></script>
+
+</head>
+<body>
+  <div class="section page-header">
+    <div class="container">
+      <div class="row">
+	<div class="full column" style="margin-top: 5%">
+	  <h1>Wikipedia hashtag search</h1>
+	  <p>Search for <a href="http://blog.hatnote.com/post/112756032432/the-humble-hashtag-now-on-wikipedia">hashtags</a> in Wikipedia edit summaries</p>
+	</div>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div cass="row">
+      <div class="eight columns">
+	<form id="tag-search">
+	  <div class="row">
+	    <div class="nine columns">
+	      <label for="search">Search</label>
+              <input class="u-full-width" type="search" placeholder="Enter a hashtag" id="search">
+	    </div>
+	    <div class="three columns">
+	      <label for="lang">Language</label>
+              <select class="u-full-width" id="lang">
+		<option value="" selected="selected">All</option>
+		{#langs}
+		<option value="{.}">{.}</option>
+		{/langs}
+	      </select>
+	    </div>
+	  </div>
+    <div class="row">
+      <div class="three columns" style="margin-right: 2em">
+        <label for="startdate">Start date:</label>
+          <input id="startdate" type="date">
+      </div>
+      <div class="three columns">
+        <label for="enddate">End date:</label>
+          <input id="enddate" type="date">
+      </div>
+    </div>
+	  <div class="row">
+	    <div class="six columns">
+	      <input class="button-primary" type="submit" value="Submit">
+	    </div>
+	  </div>
+	</form>
+      </div>
+      <div class="four columns">
+	<div class="info">
+	  <h3>Trending tags</h3>
+	  <ol>
+	    {% for tag in top_tags %}
+	     <li><a href="/hashtags/search/{{ tag }}">{{ tag }}</a></li>
+	    {% endfor %}
+	  </ol>
+	</div>
+	<p></p>
+      </div>
+    </div>
+    <div class="row">
+      <p></p>
+      
+    </div>
+  </div>
+</div>
+<div class="section page-footer">
+  <div class="container">
+    <div class="row">
+      <div class="full width">
+        <p><a href="/hashtags/docs">Learn more</a>. Built by <a href="https://twitter.com/sklaporte">Stephen LaPorte</a>, <a href="https://twitter.com/mhashemi">Mahmoud Hashemi</a>, and <a href="https://twitter.com/Samwalton9">Sam Walton</a>. Our source code is <a href="https://github.com/samwalton9/hashtags">available on github</a>.
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

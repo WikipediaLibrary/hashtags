@@ -22,8 +22,9 @@ def valid_hashtag(hashtag):
 
     not_excluded = hashtag.lower() not in EXCLUDED
     not_only_numbers = not hashtag.isdigit()
+    not_only_one_character = len(hashtag) > 1
 
-    return all([not_excluded, not_only_numbers])
+    return all([not_excluded, not_only_numbers, not_only_one_character])
 
 
 def valid_edit(change):

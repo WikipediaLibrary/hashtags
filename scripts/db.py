@@ -1,10 +1,17 @@
 import mysql.connector
 
+from project_settings import (
+        DB_HOST,
+        DB_USER,
+        DB_PASSWORD,
+        DB_NAME
+    )
+
 hashtag_db = mysql.connector.connect(
-    host='localhost',
-    user='hashtag',
-    passwd='hashtag',
-    database='hashtag'
+    host=DB_HOST,
+    user=DB_USER,
+    passwd=DB_PASSWORD,
+    database=DB_NAME
 )
 
 

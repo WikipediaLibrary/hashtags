@@ -1,0 +1,165 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="utf-8">
+  <title>Wikipedia edits by hashtag</title>
+  <meta name="description" content="Searching for hashtags in Wikipedia edit summaries">
+  <meta name="author" content="Stephen LaPorte & Mahmoud Hashemi">
+
+  <link rel="stylesheet" href="{% static "hashtags/css/normalize.css" %}">
+  <link rel="stylesheet" href="{% static "hashtags/css/skeleton.css" %}">
+  <link rel="stylesheet" href="{% static "hashtags/css/style.css" %}">
+
+  <script type="text/javascript" src="{% static "hashtags/js/jquery.js" %}"></script>
+  <script type="text/javascript" src="{% static "hashtags/js/history.min.js" %}"></script>
+  <script type="text/javascript" src="{% static "hashtags/js/jquery.tablesorter.min.js" %}"></script>
+  <script type="text/javascript" src="{% static "hashtags/js/search.js" %}"></script>
+
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
+
+</head>
+<body>
+  <div class="section page-header">
+    <div class="container">
+      <div class="row">
+	<div class="full column" style="margin-top: 5%">
+          <h1><a href="/hashtags">Wikipedia social search</a></h1>
+	  <p>Search for <a href="http://blog.hatnote.com/post/112756032432/the-humble-hashtag-now-on-wikipedia">hashtags</a> in Wikipedia edit summaries</p>
+	</div>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <form id="tag-search">
+      <div class="row">
+	<div class="eight columns">
+          <input class="u-full-width" type="search" placeholder="Enter a hashtag or @mention" id="search" value="{tag}">
+	</div>
+	<div class="two columns">
+          <select class="u-full-width" id="lang">
+	    {^lang}
+	    <option value="" selected="selected">All</option>
+	    {:else}
+	    <option value="{lang}" selected="selected">{lang}</option>
+	    {/lang}
+	    {#langs}
+	    <option value="{.}">{.}</option>
+	    {/langs}
+	  </select>
+	</div>
+	<div class="two columns">
+	  <input class="u-full-width button-primary" type="submit" value="Submit">
+	</div>
+      </div>
+    <div class="row">
+      <div class="three columns" style="margin-right: 2em">
+        <label for="startdate">Start date:</label>
+          <input id="startdate" type="date" value="{startdate}">
+      </div>
+      <div class="three columns">
+        <label for="enddate">End date:</label>
+          <input id="enddate" type="date" value="{enddate}">
+      </div>
+    </div>
+    </form>
+    {^revisions}
+    <p class="no-results">No revisions tagged with <strong>#{tag}</strong> (yet){?lang} in {lang}{/lang}{?filtered_by_date} in this date range{/filtered_by_date}.</p>
+    {:else}
+    <div class="row">
+      <div class="full width">
+	<div class="info">
+	  <div class="row">
+	    <div class="two-thirds column">
+	      <h2>{?tag}#{tag}{:else}All tags{/tag}</h2>
+	      <p class="stats-subtitle">First appeared {stats.oldest}</p>
+	      <p><div class="g-savetodrive save" data-src="/hashtags/csv/{tag}{?url_structure}{url_structure}&{:else}?{/url_structure}limit=20000" data-filename="{tag}-{stats.newest}.csv" data-sitename="Wikipedia Hashtag Search"></div><a href="/hashtags/csv/{tag}{?url_structure}{url_structure}&{:else}?{/url_structure}limit=20000" download="{tag}-{stats.newest}.csv" class="save">Download CSV</a> (<span><a href="/hashtags/docs#download" class="docs-link">learn more</a>)</span></p>
+	    </div>
+	    <div class="one-third column">
+	      <p class="stats-date-range">{stats.oldest} - {stats.newest}</p>
+
+	      <table class="stats-table">
+		<tr>
+		  <td class="stat">{stats.revisions}</td>
+		  <td class="stat-label">revision{@gt key=stats.revisions value=1}s{/gt}</td>
+		</tr>
+		<tr>
+		   <td class="stat">{stats.pages}</td> 
+		   <td class="stat-label">page{@gt key=stats.pages value=1}s{/gt}</td>
+		</tr>
+		<tr>
+		  <td class="stat">{stats.users}</td>
+		  <td class="stat-label">user{@gt key=stats.users value=1}s{/gt}</td>
+		</tr>
+		<tr>
+		  <td class="stat">{stats.bytes}</td>
+		  <td class="stat-label">byte{@gt key=stats.bytes value=1}s{/gt} changed</td>
+		<tr>
+		  <td class="stat">{stats.langs}</td>
+		  <td class="stat-label">language{@gt key=stats.langs value=1}s{/gt}</td>
+		</tr>
+	      </table>
+	    </div>
+	  </div>
+	</div>
+        <table class="u-full-width tablesorter" id="rc-table">
+          <thead>
+            <tr>
+              <th>Page</th>
+              <th>User</th>
+              <th class="right-align">Size</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+          {#revisions}
+            <tr>
+              <td><p class="title"><a href="{diff_url}">{spaced_title}</a> <span class="lang">({htrc_lang})</span></p><p class="comment">{rc_comment|s}</p></td>
+              <td class="no-wrap"><a href="{rc_user_url}">{rc_user_text}</a></td>
+              <td class="right-align">{diff_size}</td>
+              <td class="no-wrap">{date}</td>
+            </tr>
+          {/revisions}
+          </tbody>
+        </table>
+      </div>
+      <div class="row results">
+	<p>{page.start} - {page.end} of {stats.revisions} results</p>
+      </div>
+      <div class="row">
+	<div class="one-half column">
+	  {@gte key=page.prev value=0}
+	  <a href="/hashtags/search/{?tag}{tag}{:else}all{/tag}/{page.prev}{url_structure}" class="u-full-width button">< previous</a>
+          {:else}
+	  &nbsp;
+	  {/gte}
+	</div>
+	<div class="one-half column">
+	  {@gt key=page.next value=0}
+	  <a href="/hashtags/search/{?tag}{tag}{:else}all{/tag}/{page.next}{url_structure}" class="u-full-width button">next > </a>
+	  {:else}
+	  &nbsp;
+	  {/gt}
+	</div>
+	<a href="/hashtags" class="u-full-width button">Home</a>
+	<div class="row results">
+
+	</div>
+
+      </div>
+    </div>
+    {/revisions}
+  </div>
+  <div class="section page-footer">
+  <div class="container">
+    <div class="row">
+      <div class="full width">
+	<p><a href="/hashtags/docs">Learn more</a>. Built by <a href="https://twitter.com/sklaporte">Stephen LaPorte</a> and <a href="https://twitter.com/mhashemi">Mahmoud Hashemi</a>. Our source code is <a href="https://github.com/hatnote/hashtag-search">available on github</a>.
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
