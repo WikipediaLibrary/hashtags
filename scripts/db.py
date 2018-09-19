@@ -20,7 +20,7 @@ def insert_db(hashtag, change):
     query = """
         INSERT INTO hashtags_hashtag
         (hashtag, domain, timestamp, username, page_title,
-        edit_summary, diff_id)
+        edit_summary, rc_id)
         VALUES
         (%s, %s, %s, %s, %s, %s, %s)
         """
@@ -53,7 +53,7 @@ def get_latest_datetime():
 
     return cursor.fetchone()
 
-def is_duplicate(hashtag, diff_id):
+def is_duplicate(hashtag, rc_id):
     """
     We can't make diff or event id a unique key, because we're creating
     a db row per hashtag use, not per diff. As such, we need to check if
@@ -63,10 +63,10 @@ def is_duplicate(hashtag, diff_id):
     query = """
         SELECT COUNT(*) FROM hashtags_hashtag
         WHERE hashtag = %s
-        AND diff_id = %s
+        AND rc_id = %s
         """
 
-    cursor.execute(query, (hashtag, diff_id))
+    cursor.execute(query, (hashtag, rc_id))
 
     if cursor.fetchone()[0] == 0:
         return False

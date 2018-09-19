@@ -138,7 +138,13 @@
           <tbody>
           {% for hashtag in hashtags %}
             <tr>
-              <td><p class="title"><a href="https://{{ hashtag.domain }}/wiki/{{ hashtag.page_title }}"> {{ hashtag.page_title }}</a> <span class="lang">({{ hashtag.domain }})</span></p><p class="comment">{{ hashtag.edit_summary }}</p></td>
+              <td>
+                <p class="title">
+                  <a href="https://{{ hashtag.domain }}/wiki/{{ hashtag.page_title }}">{{ hashtag.page_title }}</a>
+                  <span class="lang">({{ hashtag.domain }})</span>
+                </p>
+                <p class="comment">{{ hashtag.edit_summary }}</p>
+              </td>
               <td class="no-wrap"><a href="https://{{ hashtag.domain }}/wiki/User:{{ hashtag.username }}">{{ hashtag.username }}</a></td>
               <td class="no-wrap">{{ hashtag.timestamp }}</td>
             </tr>

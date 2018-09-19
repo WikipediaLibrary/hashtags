@@ -94,7 +94,7 @@ def csv_to_db():
 			query = """
 			    INSERT INTO hashtags_hashtag
 			    (hashtag, domain, timestamp, username, page_title,
-			    edit_summary, diff_id)
+			    edit_summary, rc_id)
 			    VALUES
 			    (%s, %s, %s, %s, %s, %s, %s)
 			    """

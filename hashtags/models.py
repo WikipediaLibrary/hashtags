@@ -20,4 +20,4 @@ class Hashtag(models.Model):
 	# Per https://meta.wikimedia.org/wiki/Help:Edit_summary, summaries
 	# have a maximum possible length of 800 characters.
 	edit_summary = models.CharField(max_length=800)
-	diff_id = models.PositiveIntegerField()
+	rc_id = models.PositiveIntegerField()
