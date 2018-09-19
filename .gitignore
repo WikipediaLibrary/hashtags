@@ -1,3 +1,5 @@
 env/
 project_settings.py
 *.pyc
+*.sql
+*.csv
