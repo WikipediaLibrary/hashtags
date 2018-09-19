@@ -16,9 +16,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from hashtags.views import Index
+from hashtags.views import Index, csv_download
 
 urlpatterns = [
 	path('', Index.as_view(), name='index'),
+	path('csv/', csv_download, name='csv_download'),
     path('admin/', admin.site.urls, name='admin'),
 ]

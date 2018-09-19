@@ -37,11 +37,11 @@
         <div class="eight columns">
   	      <form id="tag-search">
   	        <div class="row">
-  	          <div class="four columns">
+  	          <div class="seven columns">
                 {{ form.query.label }}
   	            {{ form.query }}
   	          </div>
-  	          <div class="four columns">
+  	          <div class="five columns">
                 {{ form.project.label }}
                 {{ form.project }}
   	          </div>
@@ -102,7 +102,7 @@
           <div class="row">
             <div class="two-thirds column">
               <h2>#{{ hashtag_query }}</h2>
-              [TODO: Download CSV]
+                <a href="csv/?{{ query_string }}">Download CSV</a>
             </div>
             <div class="one-third column">
               <p class="stats-date-range">{{ oldest }} - {{ newest }}</p>
@@ -146,17 +146,19 @@
           </tbody>
         </table>
         <div class="row results">
-          <p>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</p>
-        </div>
-        <div class="row">
-          <div class="one-half column">
+          <div class="offset-by-three two columns">
             {% if page_obj.has_previous %}
-              <a href="?{% url_replace page=page_obj.previous_page_number %}">Previous</a>
+              <a href="?{% url_replace page=page_obj.previous_page_number %}" class="button">Previous</a>
+            {% else %}
+            &nbsp;
             {% endif %}
           </div>
-          <div class="one-half column">
+          <div class="two columns">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+          </div>
+          <div class="two columns">
             {% if page_obj.has_next %}
-              <a href="?{% url_replace page=page_obj.next_page_number %}">Next</a>
+              <a href="?{% url_replace page=page_obj.next_page_number %}" class="button">Next</a>
             {% endif %}
           </div>
         </div>
