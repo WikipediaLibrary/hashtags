@@ -1,0 +1,16 @@
+{% extends "hashtags/base.html" %}
+
+{% block content %}
+  <div class="container docs">
+    <h2>Documentation</h2>
+    <p>On Wikipedia, anyone can include a hashtag in their edit summary when adding to the sum of human knowledge:</p>
+    <img src="http://31.media.tumblr.com/89e0dadf1eb2059d6811134ecd75e92c/tumblr_inline_nkq9fdb40Z1ql4e1e.png">
+    <p>Learn more <a href="http://blog.hatnote.com/post/112756032432/the-humble-hashtag-now-on-wikipedia">on the Hatnote blog</a>.</p>
+    <h3>What is a hashtag?</h3>
+    <p>We follow <a href="https://github.com/twitter/twitter-text/blob/master/conformance/autolink.yml#L128">Twitter's specification</a> (mostly) for hashtags: a hash mark (#) followed by one or more alphanumeric characters.</p>
+    <p>We use a version of this regular expression to match tags and mentions in the edit summary:</p>
+    <script src="https://gist.github.com/mahmoud/237eb20108b5805aed5f.js"></script>  
+    <h3><a name="download"></a>Downloading results</h3>
+    <p>You can download CSV results for a hashtag at <code>http://tools.wmflabs.org/hashtags/csv/&lt;tag&gt;?limit=&lt;limit&gt;</code>. If you do not provide a <code>limit</code> parameter, it will return 20,000 revisions by default. You can also optionally provide a <code>lang</code> parameter to limit your results to one version of Wikipedia (or <code>lang=wikidata</code>), and <code>startdate</code> and/or <code>enddate</code> parameters to limit your search by date (date format YYYY-MM-DD).</p>
+  </div>
+{% endblock content %}

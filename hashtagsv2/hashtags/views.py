@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.db.models import Count
 from django.shortcuts import render
-from django.views.generic import FormView, ListView
+from django.views.generic import FormView, ListView, TemplateView
 
 from .forms import SearchForm
 from .models import Hashtag
@@ -101,3 +101,6 @@ def csv_download(request):
             hashtag.page_title, hashtag.edit_summary, hashtag.diff_id])
 
     return response
+
+class Docs(TemplateView):
+    template_name = 'hashtags/docs.html'
