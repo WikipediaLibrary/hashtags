@@ -6,6 +6,8 @@ services:
      - main
    depends_on:
      - db
+   volumes:
+     - ./:/app
  db:
    image: mysql:5.7
    environment:
