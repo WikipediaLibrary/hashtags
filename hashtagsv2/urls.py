@@ -16,10 +16,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from hashtagsv2.hashtags.views import Index, csv_download
+from hashtagsv2.hashtags.views import (Index,
+                                      csv_download,
+                                      Docs)
 
 urlpatterns = [
 	path('', Index.as_view(), name='index'),
 	path('csv/', csv_download, name='csv_download'),
+    path('docs/', Docs.as_view(), name='docs'),
     path('admin/', admin.site.urls, name='admin'),
 ]

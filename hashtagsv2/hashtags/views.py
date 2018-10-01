@@ -1,11 +1,12 @@
 import csv
 from datetime import datetime, timedelta
 
+from django.contrib import messages
 from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.db.models import Count
 from django.shortcuts import render
-from django.views.generic import FormView, ListView
+from django.views.generic import FormView, ListView, TemplateView
 
 from .forms import SearchForm
 from .models import Hashtag
@@ -67,7 +68,13 @@ class Index(ListView):
         if form.is_valid():
             form_data = form.cleaned_data
 
-            return hashtag_queryset(form_data)
+            hashtag_qs = hashtag_queryset(form_data)
+
+            if hashtag_qs.count() == 0:
+                messages.add_message(self.request, messages.INFO,
+                    'No results found.')
+
+            return hashtag_qs
 
 
         # We're mixing forms and listview; paginate_by expects to always
@@ -94,3 +101,6 @@ def csv_download(request):
             hashtag.page_title, hashtag.edit_summary, hashtag.diff_id])
 
     return response
+
+class Docs(TemplateView):
+    template_name = 'hashtags/docs.html'
