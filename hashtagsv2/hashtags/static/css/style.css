@@ -1,0 +1,146 @@
+.mainspace-only-label {
+    float: right;
+}
+
+.page-header {
+    color: #404040;
+    background: #f8f8f8;
+    margin: 0 0 1em 0;
+    border-bottom: 1px solid #d8e6ec;
+}
+.page-header p, .page-header a {
+    color: #999;
+}
+.page-header a:hover {
+    color: #1EAEDB;
+}
+.page-header h1 a {
+    color: #404040;
+    text-decoration: none;
+}
+.info {
+    border: 1px solid #E1E1E1;
+    border-radius: 4px;
+    padding: 1.5rem 2rem;
+    margin: 0 0.2rem;
+}
+.info p {
+    margin: 1em 0;
+    font-size: 1em;
+    color: #9E9E9E;
+}
+.info h2 {
+    font-size: 4rem;
+    margin-bottom: 0;
+}
+.info h3 {
+    font-size: 1.5em;
+}
+.docs h2 {
+    font-size: 3.5rem !important;
+}
+.stats-table {
+    margin: 0;
+}
+.stats-table td {
+    padding: inherit 0;
+    padding: 0 0.5em;
+    border: 0;
+}
+.stat {
+    color: #222;
+    text-align: right;
+}
+.stat-label {
+    color: #999;
+}
+p.stats-subtitle {
+    margin: 0 0 1.5em 0;
+    
+}
+p.stats-date-range {
+    margin: 0.5em 0 0 0;
+    font-size: 0.9em;
+  color: #222;
+}
+.results {
+    text-align: center;
+    font-size: 90%;
+    font-style: italic;
+}
+.page-footer {
+    text-align: center;
+    font-size: 85%;
+    color: #999;
+}
+.no-wrap {
+    white-space: nowrap;
+}
+.right-align {
+    text-align: right;
+}
+th.headerSortUp { 
+    background: no-repeat right url(images/desc.gif); 
+    background-color: #f5f5f5; 
+} 
+th.headerSortDown { 
+    background: no-repeat right url(images/asc.gif); 
+    background-color: #f5f5f5; 
+  } 
+h2 {
+    font-size: 2rem;
+  }
+form {
+    margin-bottom: 0;
+}
+.save {
+    margin-left: 1em;
+}
+.docs-link {
+    text-decoration: none;
+    border-bottom: 1px #999 dotted;
+    color: #999;
+}
+.comment {
+    color: #999;
+    font-size: 85%;
+    margin: 1em 0 0 0;
+}
+.title {
+    font-weight: 800;
+    margin: 0;
+}
+.lang {
+    font-weight: normal;
+    color: #999;
+}
+.no-results {
+    text-align: center;
+    font-size: 150%;
+    margin: 5em;
+}
+
+.intervals {
+    text-align: center;
+}
+
+.urgent {
+    background-color: red !important;
+    color: white;
+}
+
+.minor {
+    background-color: yellow;
+}
+
+@media (max-width: 800px) {
+    input.button-primary {
+	padding: 0 5px;
+    }
+    .no-wrap {
+	white-space: normal;
+    }
+    p.stats-date-range {
+	font-size: 80%;
+    }
+}
