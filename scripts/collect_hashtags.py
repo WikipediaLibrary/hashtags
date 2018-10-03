@@ -35,6 +35,7 @@ for event in EventSource(url):
                         hashtag=hashtag, id=change['id']))
 
                 elif valid_hashtag(hashtag):
+                    # Check edit_summary length, truncate if necessary
+                    if len(change['comment']) > 800:
+                        change['comment'] = change['comment'][:799]
                     db.insert_db(hashtag, change)
-                    print('Got hashtag from {user} editing {title}: {hashtag}'.format(
-                        hashtag=hashtag, **change))
