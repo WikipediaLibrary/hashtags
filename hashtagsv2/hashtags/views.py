@@ -14,15 +14,29 @@ from .models import Hashtag
 def hashtag_queryset(request_dict):
     queryset = Hashtag.objects.filter(hashtag=request_dict['query'])
 
-    if request_dict['project']:
+    try:
+        project = request_dict['project']
+    except KeyError:
+        project = None
+    if project:
         queryset = queryset.filter(
-            domain=request_dict['project'])
-    if request_dict['startdate']:
+            domain=project)
+
+    try:
+        startdate = request_dict['startdate']
+    except KeyError:
+        startdate = None
+    if startdate:
         queryset = queryset.filter(
-            timestamp__gt=request_dict['startdate'])
-    if request_dict['enddate']:
+            timestamp__gt=startdate)
+
+    try:
+        enddate = request_dict['enddate']
+    except KeyError:
+        enddate = None
+    if enddate:
         queryset = queryset.filter(
-            timestamp__lt=request_dict['enddate'])
+            timestamp__lt=enddate)
 
     ordered_queryset = queryset.order_by('-timestamp')
 
@@ -95,10 +109,10 @@ def csv_download(request):
 
     writer = csv.writer(response)
     writer.writerow(['Domain', 'Timestamp', 'Username',
-        'Page title', 'Edit summary', 'Diff ID'])
+        'Page title', 'Edit summary'])
     for hashtag in hashtags:
         writer.writerow([hashtag.domain, hashtag.timestamp, hashtag.username,
-            hashtag.page_title, hashtag.edit_summary, hashtag.diff_id])
+            hashtag.page_title, hashtag.edit_summary])
 
     return response
 
