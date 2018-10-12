@@ -1,22 +1,18 @@
 import mysql.connector
 
-from project_settings import (
-        DB_HOST,
-        DB_USER,
-        DB_PASSWORD,
-        DB_NAME
-    )
-
 hashtag_db = mysql.connector.connect(
-    host=DB_HOST,
-    user=DB_USER,
-    passwd=DB_PASSWORD,
-    database=DB_NAME
+    host='127.0.0.1',
+    user='root',
+    passwd='hashtag',
+    database='hashtagsv2_db'
 )
 
 
 def insert_db(hashtag, change):
     cursor = hashtag_db.cursor()
+    cursor.execute('SET NAMES utf8mb4')
+    cursor.execute('SET CHARACTER SET utf8mb4')
+    cursor.execute('SET character_set_connection=utf8mb4')
     query = """
         INSERT INTO hashtags_hashtag
         (hashtag, domain, timestamp, username, page_title,
