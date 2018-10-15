@@ -64,6 +64,7 @@ WSGI_APPLICATION = 'hashtagsv2.wsgi.application'
 # HTTP -> HTTPS redirect
 
 SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Database
 
