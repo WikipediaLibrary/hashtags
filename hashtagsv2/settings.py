@@ -61,6 +61,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'hashtagsv2.wsgi.application'
 
+# HTTP -> HTTPS redirect
+
+SECURE_SSL_REDIRECT = True
 
 # Database
 
