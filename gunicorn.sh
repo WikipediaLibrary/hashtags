@@ -5,8 +5,6 @@ touch ./gunicorn.log
 touch ./gunicorn-access.log
 tail -n 0 -f ./gunicorn*.log &
 
-export DJANGO_SETTINGS_MODULE=hashtagsv2.settings
-
 exec gunicorn hashtagsv2.wsgi:application \
     --name hashtagsv2_django \
     --bind 0.0.0.0:8000 \

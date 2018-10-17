@@ -1,5 +1,8 @@
 # Dockerfile
 FROM python:3.5.2
+
+ENV DJANGO_SETTINGS_MODULE=hashtagsv2.settings.development
+
 WORKDIR /app
 COPY hashtagsv2 hashtagsv2
 COPY manage.py requirements.txt /app/
