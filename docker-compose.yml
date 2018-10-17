@@ -14,7 +14,7 @@ services:
    image: mysql:5.7
    environment:
      MYSQL_DATABASE: hashtagsv2_db
-     MYSQL_ROOT_PASSWORD: hashtag
+     MYSQL_ROOT_PASSWORD: newpassword
    ports:
      - "3306:3306"
    networks:
@@ -30,6 +30,14 @@ services:
      - main
    depends_on:
      - app
+ scripts:
+   build:
+    context: .
+    dockerfile: 'Dockerfile-scripts'
+   networks:
+     - main
+   depends_on:
+     - db
 
 networks:
  main:

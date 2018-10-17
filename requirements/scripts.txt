@@ -1,0 +1,2 @@
+mysql-connector==2.1.6
+sseclient==0.0.19
