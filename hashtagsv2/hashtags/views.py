@@ -12,6 +12,10 @@ from .forms import SearchForm
 from .models import Hashtag
 
 def hashtag_queryset(request_dict):
+    """
+    This function parses a request dictionary and filters a hashtag
+    queryset accordingly, sorted by most recent.
+    """
     queryset = Hashtag.objects.filter(hashtag=request_dict['query'])
 
     try:
@@ -58,7 +62,7 @@ class Index(ListView):
             count=Count('hashtag')).order_by('-count')[:10]
         context['top_tags'] = [x[0] for x in top_tags]
 
-        # Make sure we're setting initial values if user has
+        # Make sure we're setting initial values in case user has
         # already submitted something.
         context['form'] = self.form_class(self.request.GET)
 
@@ -66,6 +70,7 @@ class Index(ListView):
         if hashtags:
             context['hashtag_query'] = self.request.GET.get('query')
 
+            # Context for the stats section
             context['oldest'] = hashtags.order_by('timestamp')[0].timestamp.date()
             context['newest'] = hashtags.latest('timestamp').timestamp.date()
             context['revisions'] = hashtags.count()
@@ -73,6 +78,7 @@ class Index(ListView):
             context['users'] = hashtags.values('username').distinct().count()
             context['projects'] = hashtags.values('domain').distinct().count()
 
+            # The GET parameters from the URL, for formatting links
             context['query_string'] = self.request.META['QUERY_STRING']
 
         return context
