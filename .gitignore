@@ -4,3 +4,4 @@ project_settings.py
 *.sql
 *.csv
 *.log
+static

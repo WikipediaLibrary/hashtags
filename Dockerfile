@@ -9,8 +9,7 @@ COPY manage.py requirements.txt /app/
 
 RUN mkdir logs
 
-RUN pip install -r requirements.txt && \
-        python manage.py collectstatic --noinput
+RUN pip install -r requirements.txt
 RUN pip install gunicorn
 
 WORKDIR /app

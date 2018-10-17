@@ -1,5 +1,8 @@
 #!/bin/bash
 
+python manage.py migrate
+python manage.py collectstatic --noinput
+
 # Prepare log files and start outputting logs to stdout
 touch ./gunicorn.log
 touch ./gunicorn-access.log
