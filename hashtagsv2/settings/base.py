@@ -8,7 +8,7 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SECRET_KEY = 'fo16z^)jcicydwj!!fw6@r_-99k9iro&ov(@mh#pk^ljkfjhrd'
+SECRET_KEY = 'fo16z^)jcicydwj!!fw6@r_-99k9iro&ov(@mh#pk^ljkfto&3'
 
 # Application definition
 
@@ -61,7 +61,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'hashtagsv2_db',
         'USER': 'root',
-        'PASSWORD': 'newpassword', # Update from MYSQL_ROOT_PASSWORD in docker-compose.yml if changed
+        'PASSWORD': 'hashtag', # Update from MYSQL_ROOT_PASSWORD in docker-compose.yml if changed
         'HOST': 'db',
         'PORT': '3306',
     }
