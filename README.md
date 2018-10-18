@@ -23,6 +23,8 @@ To set the tool up for local development, you will need:
 * [Docker](https://www.docker.com)
 * [Docker Compose](https://docs.docker.com/compose/install)
 
+If you are installing Docker on Mac or Windows, Docker Compose is likely already included in your install.
+
 After installing both and cloning this repository, start it by running:
 
 >docker-compose up --build
