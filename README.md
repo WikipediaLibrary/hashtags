@@ -36,3 +36,7 @@ When the tool is first run the database takes a little while to start up, but Do
 To fix this problem, simply wait for the database to start, then re-build the containers.
 
 You should now be able to access the tool on `127.0.0.1`.
+
+Run tests with:
+
+>docker exec -it hashtags_app_1 python manage.py test
