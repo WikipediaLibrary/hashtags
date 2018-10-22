@@ -3,13 +3,15 @@ from datetime import datetime, timedelta
 
 from django.contrib import messages
 from django.http import HttpResponse
-from django.urls import reverse_lazy
 from django.db.models import Count
-from django.shortcuts import render
 from django.views.generic import FormView, ListView, TemplateView
 
 from .forms import SearchForm
 from .models import Hashtag
+
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 def hashtag_queryset(request_dict):
     """
@@ -18,29 +20,20 @@ def hashtag_queryset(request_dict):
     """
     queryset = Hashtag.objects.filter(hashtag=request_dict['query'])
 
-    try:
-        project = request_dict['project']
-    except KeyError:
-        project = None
-    if project:
-        queryset = queryset.filter(
-            domain=project)
+    if 'project' in request_dict:
+        if request_dict['project']:
+            queryset = queryset.filter(
+                domain=request_dict['project'])
 
-    try:
-        startdate = request_dict['startdate']
-    except KeyError:
-        startdate = None
-    if startdate:
-        queryset = queryset.filter(
-            timestamp__gt=startdate)
+    if 'startdate' in request_dict:
+        if request_dict['startdate']:
+            queryset = queryset.filter(
+                timestamp__gt=request_dict['startdate'])
 
-    try:
-        enddate = request_dict['enddate']
-    except KeyError:
-        enddate = None
-    if enddate:
-        queryset = queryset.filter(
-            timestamp__lt=enddate)
+    if 'enddate' in request_dict:
+        if request_dict['enddate']:
+            queryset = queryset.filter(
+                timestamp__lt=request_dict['enddate'])
 
     ordered_queryset = queryset.order_by('-timestamp')
 
