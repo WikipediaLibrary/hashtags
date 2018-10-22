@@ -91,7 +91,7 @@ class HashtagSearchTest(TestCase):
 		# We only get one result
 		self.assertEqual(object_list.count(), 1)
 		# And it's the specific entry we're looking for
-		self.assertEqual(object_list[0], self.project_hashtag)
+		self.assertEqual(object_list[0], self.project_hashtag.get_values_list())
 
 	def test_hashtags_results_3(self):
 		"""
@@ -115,7 +115,7 @@ class HashtagSearchTest(TestCase):
 		# We only get one result
 		self.assertEqual(object_list.count(), 1)
 		# And it's the specific entry we're looking for
-		self.assertEqual(object_list[0], self.date_hashtag)
+		self.assertEqual(object_list[0], self.date_hashtag.get_values_list())
 
 	def test_hashtags_results_template(self):
 		"""

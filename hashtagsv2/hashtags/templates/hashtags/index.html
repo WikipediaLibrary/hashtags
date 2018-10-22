@@ -79,7 +79,11 @@
         <div class="info">
           <div class="row">
             <div class="two-thirds column">
-              <h2>#{{ hashtag_query }}</h2>
+              <h2>
+                {% for query in hashtag_query_list %}
+                  #{{ query }}
+                {% endfor %}
+              </h2>
                 <a href="csv/?{{ query_string }}">Download CSV</a>
             </div>
             <div class="one-third column">

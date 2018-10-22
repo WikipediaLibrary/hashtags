@@ -21,3 +21,13 @@ class Hashtag(models.Model):
 	# have a maximum possible length of 800 characters.
 	edit_summary = models.CharField(max_length=800)
 	rc_id = models.PositiveIntegerField()
+
+	def get_values_list(self):
+		# When returning hashtag results we're using a values_list rather than
+		# a full queryset so that multiple hashtag searches can be properly
+		# supported without returning duplicates. As such, it can be useful
+		# to access the 'values_list' for an individual object, such as
+		# when testing
+		return Hashtag.objects.filter(pk=self.pk).values_list(
+			'domain', 'timestamp', 'username', 'page_title', 'edit_summary', 'rc_id', named=True
+		)[0]
