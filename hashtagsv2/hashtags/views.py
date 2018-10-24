@@ -114,8 +114,7 @@ def csv_download(request):
     request_dict = request.GET.dict()
 
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="{filename}.csv"'.format(
-        filename=request_dict['query'])
+    response['Content-Disposition'] = 'attachment; filename="hashtags.csv"'
 
     hashtags = hashtag_queryset(request_dict)
 
