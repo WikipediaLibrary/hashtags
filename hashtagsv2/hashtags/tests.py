@@ -117,6 +117,49 @@ class HashtagSearchTest(TestCase):
 		# And it's the specific entry we're looking for
 		self.assertEqual(object_list[0], self.date_hashtag.get_values_list())
 
+	def test_hashtags_results_4(self):
+		"""
+		Test that we receive the correct object list when
+		searching with a query that contains an octothorpe
+		"""
+		factory = RequestFactory()
+
+		data = {
+			'query': '#hashtag4'
+		}
+
+		request = factory.get(self.url, data)
+		response = views.Index.as_view()(request)
+
+		object_list = response.context_data['object_list']
+
+		# We only get one result
+		self.assertEqual(object_list.count(), 1)
+		# And it's the specific entry we're looking for
+		self.assertEqual(object_list[0], self.date_hashtag.get_values_list())
+
+	def test_hashtags_results_5(self):
+		"""
+		Test that we receive the correct object list when
+		searching for multiple hashtags
+		"""
+		factory = RequestFactory()
+
+		data = {
+			'query': 'hashtag4, hashtag3',
+		}
+
+		request = factory.get(self.url, data)
+		response = views.Index.as_view()(request)
+
+		object_list = response.context_data['object_list']
+
+		# We get two results
+		self.assertEqual(object_list.count(), 2)
+		# and they're the correct objects
+		self.assertIn(self.date_hashtag.get_values_list(), object_list)
+		self.assertIn(self.project_hashtag.get_values_list(), object_list)
+
 	def test_hashtags_results_template(self):
 		"""
 		Test that only the hashtags we expect are listed in the

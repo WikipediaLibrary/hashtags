@@ -7,48 +7,8 @@ from django.db.models import Count
 from django.views.generic import FormView, ListView, TemplateView
 
 from .forms import SearchForm
+from .helpers import split_hashtags, hashtag_queryset
 from .models import Hashtag
-
-def hashtag_queryset(request_dict):
-    """
-    This function parses a request dictionary and filters a hashtag
-    queryset accordingly, sorted by most recent.
-    """
-
-    split_hashtags_query = request_dict['query'].split(",")
-    split_hashtags = [x.strip() for x in split_hashtags_query]
-    queryset = Hashtag.objects.filter(
-        hashtag__in=split_hashtags
-            )
-
-    if 'project' in request_dict:
-        if request_dict['project']:
-            queryset = queryset.filter(
-                domain=request_dict['project'])
-
-    if 'startdate' in request_dict:
-        if request_dict['startdate']:
-            queryset = queryset.filter(
-                timestamp__gt=request_dict['startdate'])
-
-    if 'enddate' in request_dict:
-        if request_dict['enddate']:
-            queryset = queryset.filter(
-                timestamp__lt=request_dict['enddate'])
-
-    # We're using MySQL, which doesn't support DISTINCT ON, but we
-    # want to allow multiple hashtags to be queried simultaneously while
-    # not displaying the same edit more than once. We can achieve this
-    # by using values_list() for every field except hashtag - each
-    # other field is identical for the same edit, so we can use
-    # distinct() successfully.
-    # Note that this returns a Queryset of Rows, not Objects.
-    ordered_queryset = queryset.order_by(
-        '-timestamp').values_list(
-            'domain', 'timestamp', 'username', 'page_title', 'edit_summary', 'rc_id', named=True
-                ).distinct()
-
-    return ordered_queryset
 
 class Index(ListView):
     model = Hashtag
@@ -74,7 +34,7 @@ class Index(ListView):
         if hashtags:
 
             hashtag_query = self.request.GET.get('query')
-            context['hashtag_query_list'] = [x.strip() for x in hashtag_query.split(",")]
+            context['hashtag_query_list'] = split_hashtags(hashtag_query)
 
             # Context for the stats section
             context['oldest'] = hashtags.order_by('timestamp')[0].timestamp.date()
