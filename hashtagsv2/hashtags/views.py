@@ -2,7 +2,7 @@ import csv
 from datetime import datetime, timedelta
 
 from django.contrib import messages
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.db.models import Count
 from django.views.generic import FormView, ListView, TemplateView
 
@@ -86,6 +86,23 @@ def csv_download(request):
             hashtag.page_title, hashtag.edit_summary])
 
     return response
+
+def json_download(request):
+    request_dict = request.GET.dict()
+
+    hashtags = hashtag_queryset(request_dict)
+
+    row_list = []
+    for hashtag in hashtags:
+        row_list.append({
+            "Domain": hashtag.domain,
+            "Timestamp": hashtag.timestamp,
+            "Username": hashtag.username,
+            "Page title": hashtag.page_title,
+            "Edit summary": hashtag.edit_summary
+        })
+
+    return JsonResponse({"Rows": row_list})
 
 class Docs(TemplateView):
     template_name = 'hashtags/docs.html'

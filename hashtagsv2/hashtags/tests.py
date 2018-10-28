@@ -1,5 +1,6 @@
 from datetime import datetime
 from mock import patch
+from json import loads
 
 from django.urls import reverse
 from django.test import TestCase, RequestFactory
@@ -199,3 +200,24 @@ class HashtagSearchTest(TestCase):
 		# CSV should be presented successfully, and should contain
 		# 6 lines - header plus 5 entries
 		self.assertEqual(len(page_content.splitlines()), 6)
+
+	def test_hashtags_download_json(self):
+		"""
+		Make sure the JSON download works with just a hashtag
+		"""
+		factory = RequestFactory()
+
+		data = {
+			'query': 'hashtag1'
+		}
+
+		request = factory.get(self.download_url, data)
+		response = views.json_download(request)
+
+		#decode and transform response back to JSON
+		page_content = response.content.decode('utf-8')
+		json_content = loads(page_content)
+
+		# JSON should contain 5 rows. Not sure though if this test
+		# tests enough.
+		self.assertEqual(len(json_content["Rows"]), 5)
