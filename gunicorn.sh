@@ -15,4 +15,5 @@ exec gunicorn hashtagsv2.wsgi:application \
     --log-level=info \
     --log-file=./gunicorn.log \
     --access-logfile=./gunicorn-access.log \
+    --reload \
 "$@"
