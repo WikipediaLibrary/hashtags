@@ -1,5 +1,6 @@
 import json
 from sseclient import SSEClient as EventSource
+import sys
 
 from common import valid_hashtag, valid_edit, hashtag_match
 import db
@@ -18,6 +19,9 @@ if latest_datetime[0]:
     url = base_stream_url + '?since={date}'.format(
         date=latest_date_formatted)
 else:
+    url = base_stream_url
+
+if len(sys.argv) > 1 and sys.argv[1] == 'nohistorical':
     url = base_stream_url
 
 for event in EventSource(url):
