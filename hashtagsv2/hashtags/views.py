@@ -21,7 +21,7 @@ class Index(ListView):
         context = super().get_context_data(**kwargs)
 
         top_tags = Hashtag.objects.filter(
-                timestamp__gt = datetime.now() - timedelta(days=100)
+                timestamp__gt = datetime.now() - timedelta(days=30)
             ).values_list('hashtag').annotate(
             count=Count('hashtag')).order_by('-count')[:10]
         context['top_tags'] = [x[0] for x in top_tags]
