@@ -31,11 +31,15 @@ After installing both and cloning this repository, start it by running:
 
 The `-d` option will allow you to run in detached mode.
 
-When the tool is first run the database takes a little while to start up, but Docker Compose won't natively wait for the database container to finish before starting to run the app. The app will error in multiple places if the db isn't running yet. There are solutions to this that <a href="https://phabricator.wikimedia.org/T207277">will be implemented eventually</a>.
-
-To fix this problem, simply wait for the database to start, then re-build the containers. You will likely need to do this twice because the scripts container will then complain about not being able to find the relevant database table until the app container has finished running migrations.
-
 You should now be able to access the tool on `127.0.0.1`.
+
+When the tool is first run the scripts container will fail because migrations haven't finished running yet. There are solutions to this that <a href="https://phabricator.wikimedia.org/T207277">will be implemented eventually</a>.
+
+To fix this problem, simply restart the container with:
+
+>docker start hashtags_scripts_1
+
+An old error message may be printed if you're not running in detached mode, but the container should start successfully.
 
 Run tests with:
 
