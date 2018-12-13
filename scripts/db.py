@@ -32,7 +32,13 @@ def insert_db(hashtag, change):
         change['comment'],
         change['id'])
 
-    cursor.execute(query, values)
+    try:
+        cursor.execute(query, values)
+    except mysql.connector.errors.IntegrityError:
+        print("Skipped rc_id {rc_id} due to integrity error".format(
+            rc_id=change['id']
+        ))
+        return False
 
     hashtag_db.commit()
 
@@ -48,6 +54,7 @@ def get_latest_datetime():
     cursor.execute(query)
 
     return cursor.fetchone()
+
 
 def is_duplicate(hashtag, rc_id):
     """
