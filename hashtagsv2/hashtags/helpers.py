@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from .models import Hashtag
 
 def split_hashtags(hashtag_list):
@@ -32,9 +34,10 @@ def hashtag_queryset(request_dict):
                 timestamp__gt=request_dict['startdate'])
 
     if 'enddate' in request_dict:
+        enddate_plus_one = request_dict['enddate'] + timedelta(days=1)
         if request_dict['enddate']:
             queryset = queryset.filter(
-                timestamp__lt=request_dict['enddate'])
+                timestamp__lt=enddate_plus_one)
 
     # We're using MySQL, which doesn't support DISTINCT ON, but we
     # want to allow multiple hashtags to be queried simultaneously while
