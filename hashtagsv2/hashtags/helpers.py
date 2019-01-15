@@ -34,8 +34,8 @@ def hashtag_queryset(request_dict):
                 timestamp__gt=request_dict['startdate'])
 
     if 'enddate' in request_dict:
-        enddate_plus_one = request_dict['enddate'] + timedelta(days=1)
         if request_dict['enddate']:
+            enddate_plus_one = request_dict['enddate'] + timedelta(days=1)
             queryset = queryset.filter(
                 timestamp__lt=enddate_plus_one)
 
