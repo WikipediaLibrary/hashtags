@@ -201,6 +201,28 @@ class HashtagSearchTest(TestCase):
 		# 6 lines - header plus 5 entries
 		self.assertEqual(len(page_content.splitlines()), 6)
 
+	def test_hashtags_download_csv_full_query(self):
+		"""
+		Make sure the CSV download works with a full query
+		"""
+		factory = RequestFactory()
+
+		data = {
+			'query': 'hashtag4',
+			'project': 'ja.wikipedia.org',
+			'startdate': '2017-01-01',
+			'enddate': '2018-01-01'
+		}
+
+		request = factory.get(self.download_url, data)
+		response = views.csv_download(request)
+
+		page_content = response.content
+
+		# CSV should be presented successfully, and should contain
+		# 2 lines - header plus 1 entry
+		self.assertEqual(len(page_content.splitlines()), 2)
+
 	def test_hashtags_download_json(self):
 		"""
 		Make sure the JSON download works with just a hashtag
@@ -221,3 +243,27 @@ class HashtagSearchTest(TestCase):
 		# JSON should contain 5 rows. Not sure though if this test
 		# tests enough.
 		self.assertEqual(len(json_content["Rows"]), 5)
+
+	def test_hashtags_download_json_full_query(self):
+		"""
+		Make sure the JSON download works with a full query
+		"""
+		factory = RequestFactory()
+
+		data = {
+			'query': 'hashtag4',
+			'project': 'ja.wikipedia.org',
+			'startdate': '2017-01-01',
+			'enddate': '2018-01-01'
+		}
+
+		request = factory.get(self.download_url, data)
+		response = views.json_download(request)
+
+		#decode and transform response back to JSON
+		page_content = response.content.decode('utf-8')
+		json_content = loads(page_content)
+
+		# JSON should contain 1 row. Not sure though if this test
+		# tests enough.
+		self.assertEqual(len(json_content["Rows"]), 1)

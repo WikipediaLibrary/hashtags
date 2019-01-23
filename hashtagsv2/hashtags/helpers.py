@@ -1,3 +1,4 @@
+from datetime import datetime
 from datetime import timedelta
 
 from .models import Hashtag
@@ -35,7 +36,13 @@ def hashtag_queryset(request_dict):
 
     if 'enddate' in request_dict:
         if request_dict['enddate']:
-            enddate_plus_one = request_dict['enddate'] + timedelta(days=1)
+            # Convert enddate to a datetime directly to ensure timedelta
+            # works if the date comes in as a string.
+            if type(request_dict['enddate']) == str:
+                end_date = datetime.strptime(request_dict['enddate'], '%Y-%m-%d')
+            else:
+                end_date = request_dict['enddate']
+            enddate_plus_one = end_date + timedelta(days=1)
             queryset = queryset.filter(
                 timestamp__lt=enddate_plus_one)
 
