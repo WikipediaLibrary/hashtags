@@ -1,14 +1,21 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 import re
 
-# From https://github.com/hatnote/hashtag-search/blob/1e02506a732b3e018521c431c4b5c3f3c0618215/common.py
-EXCLUDED = ('redirect',
+EXCLUDED = ('redirect', # #REDIRECT in various languages
             'weiterleitung',
             'redirection',
-            'ifexist',
+            'redirección',
+            'doorverwijzing',
+            'redirecionamento',
+            'omdirigering',
+            'ifexist', # Other magic words and template syntax
             'switch',
             'ifexpr',
             'if',
-            'rs')
+            'rs',
+            'mw',
+            'default')
 
 
 def hashtag_match(comment):
