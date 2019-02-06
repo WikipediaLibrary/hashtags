@@ -80,10 +80,10 @@ def csv_download(request):
 
     writer = csv.writer(response)
     writer.writerow(['Domain', 'Timestamp', 'Username',
-        'Page title', 'Edit summary'])
+        'Page title', 'Edit summary', 'Revision id'])
     for hashtag in hashtags:
         writer.writerow([hashtag.domain, hashtag.timestamp, hashtag.username,
-            hashtag.page_title, hashtag.edit_summary])
+            hashtag.page_title, hashtag.edit_summary, hashtag.rc_id])
 
     return response
 
@@ -99,7 +99,8 @@ def json_download(request):
             "Timestamp": hashtag.timestamp,
             "Username": hashtag.username,
             "Page title": hashtag.page_title,
-            "Edit summary": hashtag.edit_summary
+            "Edit summary": hashtag.edit_summary,
+            "Revision ID": hashtag.rc_id
         })
 
     return JsonResponse({"Rows": row_list})
