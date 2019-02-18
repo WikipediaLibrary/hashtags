@@ -82,7 +82,7 @@ def csv_download(request):
     writer.writerow(['Domain', 'Timestamp', 'Username',
         'Page title', 'Edit summary', 'Recent changes id'])
     for hashtag in hashtags:
-        writer.writerow([hashtag.domain, hashtag.timestamp, hashtag.username,
+        writer.writerow([hashtag.domain, hashtag.timestamp.strftime("%Y-%m-%d %H:%M:%S"), hashtag.username,
             hashtag.page_title, hashtag.edit_summary, hashtag.rc_id])
 
     return response
