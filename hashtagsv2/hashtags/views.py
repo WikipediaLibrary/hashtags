@@ -53,12 +53,16 @@ class Index(ListView):
         form = self.form_class(self.request.GET)
         if form.is_valid():
             form_data = form.cleaned_data
-
-            hashtag_qs = hashtag_queryset(form_data)
-
-            if hashtag_qs.count() == 0:
+            if 'wikidata.org' in form_data['project']:
+                hashtag_qs = []
                 messages.add_message(self.request, messages.INFO,
-                    'No results found.')
+                    'Unfortunately Wikidata searching is not currently supported.')
+            else:    
+                hashtag_qs = hashtag_queryset(form_data)
+
+                if hashtag_qs.count() == 0:
+                    messages.add_message(self.request, messages.INFO,
+                        'No results found.')
 
             return hashtag_qs
 
