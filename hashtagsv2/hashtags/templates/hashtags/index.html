@@ -128,7 +128,15 @@
                 <p class="comment">{{ hashtag.edit_summary }}</p>
               </td>
               <td class="no-wrap"><a href="https://{{ hashtag.domain }}/wiki/User:{{ hashtag.username }}">{{ hashtag.username }}</a></td>
-              <td class="no-wrap">{{ hashtag.timestamp }}</td>
+              <td class="no-wrap">
+              {% if hashtag.rev_id %}
+                <a href="https://{{ hashtag.domain }}/wiki/Special:Diff/{{ hashtag.rev_id }}">
+                  {{ hashtag.timestamp }}
+                </a>
+              {% else %}
+                {{ hashtag.timestamp }}
+              {% endif %}
+              </td>
             </tr>
           {% endfor %}
           </tbody>

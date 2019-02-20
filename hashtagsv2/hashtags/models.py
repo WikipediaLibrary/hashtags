@@ -36,6 +36,7 @@ class Hashtag(models.Model):
         # to access the 'values_list' for an individual object, such as
         # when testing
         return Hashtag.objects.filter(pk=self.pk).values_list(
-            'domain', 'timestamp', 'username', 'page_title', 'edit_summary', 'rc_id',
+            'domain', 'timestamp', 'username', 'page_title', 'edit_summary',
+            'rc_id', 'rev_id',
             named=True
         )[0]
