@@ -9,8 +9,8 @@ base_stream_url = 'https://stream.wikimedia.org/v2/stream/recentchange'
 
 # Every time this script is started, find the latest entry in the database,
 # and start the eventstream from there. This ensures that in the event of
-# any downtime, we always maintain 100% data coverage (up to the 7-31 days
-# that the EventStream historical data is kept).
+# any downtime, we always maintain 100% data coverage (up to the ~30 days
+# that the EventStream historical data is kept anyway).
 latest_datetime = db.get_latest_datetime()
 
 if latest_datetime[0]:
@@ -34,9 +34,9 @@ for event in EventSource(url):
         hashtag_matches = hashtag_match(change['comment'])
         if hashtag_matches and valid_edit(change):
             for hashtag in hashtag_matches:
-                if db.is_duplicate(hashtag, change['id']):
-                    print("Skipped duplicate {hashtag} ({id})".format(
-                        hashtag=hashtag, id=change['id']))
+                if db.is_duplicate(hashtag, change['revision']['new']):
+                    print("Skipped duplicate {hashtag} (rev_id = {id})".format(
+                        hashtag=hashtag, id=change['revision']['new']))
 
                 elif valid_hashtag(hashtag):
                     # Check edit_summary length, truncate if necessary
