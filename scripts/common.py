@@ -8,7 +8,9 @@ EXCLUDED = ('redirect',
             'switch',
             'ifexpr',
             'if',
-            'rs')
+            'rs',
+            'default',
+            'mw')
 
 
 def hashtag_match(comment):
