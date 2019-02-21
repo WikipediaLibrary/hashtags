@@ -55,7 +55,9 @@ def hashtag_queryset(request_dict):
     # Note that this returns a Queryset of Rows, not Objects.
     ordered_queryset = queryset.order_by(
         '-timestamp').values_list(
-            'domain', 'timestamp', 'username', 'page_title', 'edit_summary', 'rc_id', named=True
+            'domain', 'timestamp', 'username', 'page_title', 'edit_summary',
+            'rc_id', 'rev_id',
+                named=True
                 ).distinct()
 
     return ordered_queryset
