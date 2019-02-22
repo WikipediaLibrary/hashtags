@@ -1,5 +1,5 @@
 import csv
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
@@ -63,6 +63,12 @@ class Index(ListView):
                 if hashtag_qs.count() == 0:
                     messages.add_message(self.request, messages.INFO,
                         'No results found.')
+                else:
+                    latest_datetime = Hashtag.objects.latest('timestamp').timestamp
+                    diff = datetime.now(timezone.utc) - latest_datetime
+                    if diff.seconds > 3600:
+                        messages.add_message(self.request, messages.INFO,
+                        'Note that the latest edits may not be reflected in the tool.')                     
 
             return hashtag_qs
 
