@@ -20,10 +20,10 @@ def hashtag_queryset(request_dict):
 
     hashtag_list = split_hashtags(request_dict['query'])
 
-    temp_list = '(' + '|'.join(hashtag_list) + ')'
+    regex_query_string = '(' + '|'.join(hashtag_list) + ')'
 
     queryset = Hashtag.objects.filter(
-        hashtag__iregex=temp_list
+        hashtag__iregex=regex_query_string
             )
 
     if 'project' in request_dict:
