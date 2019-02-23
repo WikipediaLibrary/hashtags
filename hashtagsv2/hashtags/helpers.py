@@ -20,9 +20,15 @@ def hashtag_queryset(request_dict):
 
     hashtag_list = split_hashtags(request_dict['query'])
 
-    queryset = Hashtag.objects.filter(
+    if request_dict['type'] == 'or':
+        queryset = Hashtag.objects.filter(
         hashtag__in=hashtag_list
             )
+    else:
+        ht_i = Hashtag.objects.filter(hashtag=hashtag_list[0])
+        for ht in hashtag_list:
+            queryset = ht_i.filter(hashtag=ht)
+            ht_i = queryset  
 
     if 'project' in request_dict:
         if request_dict['project']:
