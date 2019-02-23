@@ -25,10 +25,13 @@ def hashtag_queryset(request_dict):
         hashtag__in=hashtag_list
             )
     else:
-        ht_i = Hashtag.objects.filter(hashtag=hashtag_list[0])
-        for ht in hashtag_list:
-            queryset = ht_i.filter(hashtag=ht)
-            ht_i = queryset  
+        list_of_rcids = Hashtag.objects.values_list('rc_id',flat=True).distinct()
+        selected_rcids = []
+        for i in list_of_rcids:
+            qs = set(Hashtag.objects.filter(rc_id=i).values_list('hashtag',flat=True).distinct())
+            if qs == set(hashtag_list):
+                selected_rcids.append(i)    
+        queryset = Hashtag.objects.filter(rc_id__in=selected_rcids)        
 
     if 'project' in request_dict:
         if request_dict['project']:
