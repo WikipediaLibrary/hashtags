@@ -29,7 +29,7 @@ def hashtag_queryset(request_dict):
         selected_rcids = []
         for i in list_of_rcids:
             qs = set(Hashtag.objects.filter(rc_id=i).values_list('hashtag',flat=True).distinct())
-            if qs == set(hashtag_list):
+            if set(hashtag_list).issubset(qs):
                 selected_rcids.append(i)    
         queryset = Hashtag.objects.filter(rc_id__in=selected_rcids)        
 

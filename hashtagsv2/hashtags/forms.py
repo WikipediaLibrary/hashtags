@@ -12,7 +12,7 @@ class SearchForm(forms.Form):
 		widget=forms.TextInput(attrs={'placeholder': 'Enter a hashtag',
 			'style': 'width:100%'}))
 
-	type = forms.CharField(label="Type",
+	type = forms.CharField(label="Type:",
 		widget=forms.Select(choices=TYPE_CHOICES))
 
 	project = forms.CharField(required=False,label="Project",
