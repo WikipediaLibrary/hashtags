@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Samwalton9/hashtags.svg?branch=master)](https://travis-ci.org/Samwalton9/hashtags)
+
 # Hashtags
 
 This tool is a rewrite of the Hatnote Hashtags tool.
