@@ -1,0 +1,10 @@
+sudo: required
+services:
+  - docker
+
+script:
+  - docker-compose up -d --build
+  - docker exec hashtags_app_1 python manage.py test
+
+after_script:
+  - docker images
