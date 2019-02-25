@@ -22,7 +22,7 @@
       <div class="row">
 	      <div class="full column" style="margin-top: 5%">
             <h1><a href="{% url 'index' %}">{% trans "Wikimedia hashtag search" %}</a></h1>
-          	<p>{% trans "Search for" %}<a href="http://blog.hatnote.com/post/112756032432/the-humble-hashtag-now-on-wikipedia">{% trans " hashtags" %}</a>{% trans " in Wikimedia edit summaries" %}</p>
+          	<p>{% blocktrans %} Search for <a href="http://blog.hatnote.com/post/112756032432/the-humble-hashtag-now-on-wikipedia">hashtags</a> in Wikimedia edit summaries {% endblocktrans %}</p>
 	      </div>
       </div>
     </div>
@@ -35,7 +35,7 @@
     <div class="container">
       <div class="row">
         <div class="full width">
-          <p><a href="{% url 'docs' %}">{% trans "Learn more" %}</a>{% trans ". Built by " %}<a href="https://twitter.com/sklaporte">{% trans "Stephen LaPorte" %}</a>, <a href="https://twitter.com/mhashemi">{% trans "Mahmoud Hashemi" %}</a>{% trans ", and" %}<a href="https://twitter.com/Samwalton9">{% trans " Sam Walton" %}</a>{% trans ". Our source code is " %}<a href="https://github.com/samwalton9/hashtags">{% trans "available on github" %}</a>.</p>
+          <p><a href="{% url 'docs' %}">{% blocktrans %} Learn more </a>. Built by<a href="https://twitter.com/sklaporte"> Stephen LaPorte </a>, <a href="https://twitter.com/mhashemi">Mahmoud Hashemi</a>, and <a href="https://twitter.com/Samwalton9"> Sam Walton</a>. Our source code is <a href="https://github.com/samwalton9/hashtags"> available on github {% endblocktrans %}</a>.</p>
           <p><a href="https://phabricator.wikimedia.org/maniphest/task/edit/form/1/?tags=hashtags">{% trans "Report a bug" %}</a>.</p>
         </div>
       </div>
