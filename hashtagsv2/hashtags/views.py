@@ -1,5 +1,5 @@
 import csv
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
@@ -18,6 +18,12 @@ class Index(ListView):
     paginate_by = 20
 
     def get_context_data(self, *args, **kwargs):
+        latest_datetime = Hashtag.objects.latest('timestamp').timestamp
+        diff = datetime.now(timezone.utc) - latest_datetime
+        if diff.seconds > 3600:
+            messages.add_message(self.request, messages.INFO,
+            'Note that the latest edits may not currently be reflected in the tool.')
+
         context = super().get_context_data(**kwargs)
 
         top_tags = Hashtag.objects.filter(
@@ -62,7 +68,7 @@ class Index(ListView):
 
                 if hashtag_qs.count() == 0:
                     messages.add_message(self.request, messages.INFO,
-                        'No results found.')
+                        'No results found.')                     
 
             return hashtag_qs
 
