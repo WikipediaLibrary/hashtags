@@ -20,19 +20,23 @@ def hashtag_queryset(request_dict):
 
     hashtag_list = split_hashtags(request_dict['query'])
 
-    if request_dict['type'] == 'and':
-        list_of_rcids = Hashtag.objects.values_list('rc_id',flat=True).distinct()
-        selected_rcids = []
-        for i in list_of_rcids:
-            qs = set(Hashtag.objects.filter(rc_id=i).values_list('hashtag',flat=True).distinct())
-            if set(hashtag_list).issubset(qs):
-                selected_rcids.append(i)    
-        queryset = Hashtag.objects.filter(rc_id__in=selected_rcids)
-
+    if 'search_type' in request_dict:
+        if request_dict['search_type'] == 'and':
+            rcids_for_hashtag=[]
+            for hashtag in hashtag_list:
+                qs=Hashtag.objects.filter(hashtag=hashtag).values_list('rc_id', flat=True).distinct()
+                rcids_for_hashtag.append(set(qs))
+            final_rcids = rcids_for_hashtag[0].intersection(*rcids_for_hashtag)
+            queryset = Hashtag.objects.filter(rc_id__in=list(final_rcids))
+        
+        else:
+            queryset = Hashtag.objects.filter(
+            hashtag__in=hashtag_list
+            )
     else:
         queryset = Hashtag.objects.filter(
         hashtag__in=hashtag_list
-            )            
+        )
 
     if 'project' in request_dict:
         if request_dict['project']:

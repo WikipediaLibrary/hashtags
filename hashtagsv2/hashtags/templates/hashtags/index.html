@@ -9,7 +9,7 @@
           <div class="info">{{ message }}</div>
         {% endfor %}
     {% endif %}
-    <div cass="row">
+    <div class="row">
       {% comment %} We show a different search bar if there are results vs not. {% endcomment %}
       {% if not hashtags %}
         <div class="eight columns">
@@ -29,13 +29,18 @@
                 {{ form.startdate.label }}
                 {{ form.startdate }}
               </div>
-              <div class="three columns" style="margin-right: 2em">
+              <div class="three columns">
                 {{ form.enddate.label }}
                 {{ form.enddate }}
               </div>
-              <div class="two columns">
-                {{ form.type.label }}
-                {{ form.type }}
+            </div>
+            <div class="row">
+              <button type="button" onclick="myFunction()">Advanced search</button>
+            </div>
+            <div class="row">
+              <div class="two columns" id="myDIV" style="display:none">
+                {{ form.search_type.label }}
+                {{ form.search_type }}
               </div>
             </div>
   	        <div class="row">
@@ -78,9 +83,11 @@
               {{ form.enddate.label }}
               {{ form.enddate }}
             </div>
+          </div>
+          <div class="row">
             <div class="two columns">
-              {{ form.type.label }}
-              {{ form.type }}
+              {{ form.search_type.label }}
+              {{ form.search_type }}
             </div>
           </div>
         </form>
@@ -172,4 +179,14 @@
       <p></p>
     </div>
   </div>
+  <script>
+    function myFunction() {
+  var x = document.getElementById("myDIV");
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+  </script>
 {% endblock content %}
