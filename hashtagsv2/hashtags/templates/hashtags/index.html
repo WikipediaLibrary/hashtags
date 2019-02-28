@@ -38,7 +38,7 @@
               <button type="button" onclick="showAdvance()">Advanced search</button>
             </div>
             <div class="row">
-              <div class="two columns" id="adv" style="display:none">
+              <div class="two columns" id="adv" style="display:none" title="When searching for multiple hashtags, should the results be a subset or union?">
                 {{ form.search_type.label }}
                 {{ form.search_type }}
               </div>
@@ -85,6 +85,9 @@
             </div>
           </div>
           <div class="row">
+            <button type="button" onclick="showAdvance()">Advanced search</button>
+          </div>
+          <div class="row" id="adv" style="display:none" title="When searching for multiple hashtags, should the results be a subset or union?">
             <div class="two columns">
               {{ form.search_type.label }}
               {{ form.search_type }}
