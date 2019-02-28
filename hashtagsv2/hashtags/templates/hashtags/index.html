@@ -35,10 +35,10 @@
               </div>
             </div>
             <div class="row">
-              <button type="button" onclick="myFunction()">Advanced search</button>
+              <button type="button" onclick="showAdvance()">Advanced search</button>
             </div>
             <div class="row">
-              <div class="two columns" id="myDIV" style="display:none">
+              <div class="two columns" id="adv" style="display:none">
                 {{ form.search_type.label }}
                 {{ form.search_type }}
               </div>
@@ -180,8 +180,8 @@
     </div>
   </div>
   <script>
-    function myFunction() {
-  var x = document.getElementById("myDIV");
+    function showAdvance() {
+  var x = document.getElementById("adv");
   if (x.style.display === "none") {
     x.style.display = "block";
   } else {
