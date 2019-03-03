@@ -20,16 +20,18 @@ def hashtag_queryset(request_dict):
 
     hashtag_list = split_hashtags(request_dict['query'])
 
-    regex_query_string = '(' + '|'.join(hashtag_list) + ')'
-
     queryset = Hashtag.objects.filter(
-        hashtag__iregex=regex_query_string
+        hashtag__in=hashtag_list
             )
 
     if 'project' in request_dict:
         if request_dict['project']:
+            project = request_dict['project']
+            project = project[1:]
+            regex_query_string = '[a-z]+' + project
+
             queryset = queryset.filter(
-                domain=request_dict['project'])
+                domain__iregex=regex_query_string)
 
     if 'startdate' in request_dict:
         if request_dict['startdate']:
