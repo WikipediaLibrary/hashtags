@@ -37,4 +37,7 @@ def valid_edit(change):
     # Excluding bots, mostly because of IABot. Lots of data, not very useful.
     not_bot = not change['bot']
 
-    return all([project_match, not_bot])
+    # Only consider edits and page creations
+    correct_type = change['type'] in ["edit", "new"]
+
+    return all([project_match, not_bot, correct_type])
