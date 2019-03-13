@@ -26,12 +26,6 @@ class Index(ListView):
 
         context = super().get_context_data(**kwargs)
 
-        top_tags = Hashtag.objects.filter(
-                timestamp__gt = datetime.now() - timedelta(days=30)
-            ).values_list('hashtag').annotate(
-            count=Count('hashtag')).order_by('-count')[:10]
-        context['top_tags'] = [x[0] for x in top_tags]
-
         # Make sure we're setting initial values in case user has
         # already submitted something.
         context['form'] = self.form_class(self.request.GET)
@@ -43,15 +37,23 @@ class Index(ListView):
             context['hashtag_query_list'] = split_hashtags(hashtag_query)
 
             # Context for the stats section
-            context['oldest'] = hashtags.order_by('timestamp')[0].timestamp.date()
-            context['newest'] = hashtags.latest('timestamp').timestamp.date()
-            context['revisions'] = hashtags.count()
+            num_edits = hashtags.count()
+            context['revisions'] = num_edits
+            context['oldest'] = hashtags[num_edits-1].timestamp.date()
+            context['newest'] = hashtags.first().timestamp.date()
             context['pages'] = hashtags.values('page_title', 'domain').distinct().count()
             context['users'] = hashtags.values('username').distinct().count()
             context['projects'] = hashtags.values('domain').distinct().count()
 
             # The GET parameters from the URL, for formatting links
             context['query_string'] = self.request.META['QUERY_STRING']
+        else:
+            # We don't need top tags if we're showing results
+            top_tags = Hashtag.objects.filter(
+                timestamp__gt=datetime.now() - timedelta(days=30)
+            ).values_list('hashtag').annotate(
+                count=Count('hashtag')).order_by('-count')[:10]
+            context['top_tags'] = [x[0] for x in top_tags]
 
         return context
 
@@ -66,7 +68,7 @@ class Index(ListView):
             else:    
                 hashtag_qs = hashtag_queryset(form_data)
 
-                if hashtag_qs.count() == 0:
+                if not hashtag_qs:
                     messages.add_message(self.request, messages.INFO,
                         'No results found.')                     
 
