@@ -23,6 +23,14 @@ def insert_db(hashtag, change):
 
     dt_without_plus = change['meta']['dt'].split("+")[0]
     change_dt = dt_without_plus.replace("T", " ")
+
+    # Log actions such as page moves and image uploads have no
+    # revision ID.
+    try:
+        revision_id = change['revision']['new']
+    except KeyError:
+        revision_id = None
+
     values = (
         hashtag,
         change['meta']['domain'],
@@ -31,7 +39,8 @@ def insert_db(hashtag, change):
         change['title'],
         change['comment'],
         change['id'],
-        change['revision']['new'])
+        revision_id
+        )
 
     try:
         cursor.execute(query, values)
@@ -57,20 +66,22 @@ def get_latest_datetime():
     return cursor.fetchone()
 
 
-def is_duplicate(hashtag, rev_id):
+def is_duplicate(hashtag, rc_id):
     """
     We can't make diff or event id a unique key, because we're creating
     a db row per hashtag use, not per diff. As such, we need to check if
     this hashtag + diff combo has been logged already.
+    We use rc_id because not all logged edits have a rev_id, such as page
+    moves or image uploads.
     """
     cursor = hashtag_db.cursor()
     query = """
         SELECT COUNT(*) FROM hashtags_hashtag
         WHERE hashtag = %s
-        AND rev_id = %s
+        AND rc_id = %s
         """
 
-    cursor.execute(query, (hashtag, rev_id))
+    cursor.execute(query, (hashtag, rc_id))
 
     if cursor.fetchone()[0] == 0:
         return False
