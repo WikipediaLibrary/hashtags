@@ -25,6 +25,16 @@ services:
      test: ["CMD", "mysqladmin", "ping", "-h", "localhost","-phashtag"]
      timeout: 20s
      retries: 10
+ es:
+   image: elasticsearch:5.6.15
+   volumes:
+     - esdata:/usr/share/elasticsearch/data/
+   networks:
+     - main
+   ports:
+     - "9200:9200"
+   depends_on:
+     - db
  nginx:
    image: nginx
    volumes:
@@ -47,3 +57,7 @@ services:
 
 networks:
  main:
+
+volumes:
+  esdata:
+    driver: local
