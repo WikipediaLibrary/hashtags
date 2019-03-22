@@ -52,7 +52,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'hashtagsv2.wsgi.application'
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0']
 
 # Database
 
