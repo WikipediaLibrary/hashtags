@@ -70,7 +70,7 @@ class HashtagSearchTest(TestCase):
 
 		object_list = response.context_data['object_list']
 
-		self.assertEqual(object_list.count(), 5)
+		self.assertEqual(len(object_list), 5)
 
 	def test_hashtags_results_2(self):
 		"""
@@ -90,7 +90,7 @@ class HashtagSearchTest(TestCase):
 		object_list = response.context_data['object_list']
 
 		# We only get one result
-		self.assertEqual(object_list.count(), 1)
+		self.assertEqual(len(object_list), 1)
 		# And it's the specific entry we're looking for
 		self.assertEqual(object_list[0], self.project_hashtag.get_values_list())
 
@@ -114,7 +114,7 @@ class HashtagSearchTest(TestCase):
 		object_list = response.context_data['object_list']
 
 		# We only get one result
-		self.assertEqual(object_list.count(), 1)
+		self.assertEqual(len(object_list), 1)
 		# And it's the specific entry we're looking for
 		self.assertEqual(object_list[0], self.date_hashtag.get_values_list())
 
@@ -135,7 +135,7 @@ class HashtagSearchTest(TestCase):
 		object_list = response.context_data['object_list']
 
 		# We only get one result
-		self.assertEqual(object_list.count(), 1)
+		self.assertEqual(len(object_list), 1)
 		# And it's the specific entry we're looking for
 		self.assertEqual(object_list[0], self.date_hashtag.get_values_list())
 
@@ -156,7 +156,7 @@ class HashtagSearchTest(TestCase):
 		object_list = response.context_data['object_list']
 
 		# We get two results
-		self.assertEqual(object_list.count(), 2)
+		self.assertEqual(len(object_list), 2)
 		# and they're the correct objects
 		self.assertIn(self.date_hashtag.get_values_list(), object_list)
 		self.assertIn(self.project_hashtag.get_values_list(), object_list)
