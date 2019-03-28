@@ -34,6 +34,15 @@
                 {{ form.enddate }}
               </div>
             </div>
+            <div class="row">
+              <button type="button" onclick="showAdvance()">Advanced search</button>
+            </div>
+            <div class="row">
+              <div class="two columns" id="adv" style="display:none" title="When searching for multiple hashtags, should the results be a subset or union?">
+                {{ form.search_type.label }}
+                {{ form.search_type }}
+              </div>
+            </div>
   	        <div class="row">
   	          <div class="six columns">
   	            <input class="button-primary" type="submit" value="Submit">
@@ -70,9 +79,18 @@
               {{ form.startdate.label }}
               {{ form.startdate }}
             </div>
-            <div class="three columns">
+            <div class="three columns" style="margin-right: 2em">
               {{ form.enddate.label }}
               {{ form.enddate }}
+            </div>
+          </div>
+          <div class="row">
+            <button type="button" onclick="showAdvance()">Advanced search</button>
+          </div>
+          <div class="row" id="adv" style="display:none" title="When searching for multiple hashtags, should the results be a subset or union?">
+            <div class="two columns">
+              {{ form.search_type.label }}
+              {{ form.search_type }}
             </div>
           </div>
         </form>
@@ -164,4 +182,15 @@
       <p></p>
     </div>
   </div>
+
+  <script>
+    function showAdvance() {
+  var x = document.getElementById("adv");
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+  </script>
 {% endblock content %}
