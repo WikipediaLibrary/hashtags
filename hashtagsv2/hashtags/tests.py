@@ -9,6 +9,7 @@ from .factories import HashtagFactory
 from .models import Hashtag
 from . import views
 
+
 class HashtagSearchTest(TestCase):
 	@classmethod
 	def setUp(self):
@@ -267,3 +268,19 @@ class HashtagSearchTest(TestCase):
 		# JSON should contain 1 row. Not sure though if this test
 		# tests enough.
 		self.assertEqual(len(json_content["Rows"]), 1)
+
+	def test_no_hashtags(self):
+		"""
+		On first setup, the tool has nothing in the database.
+		This shouldn't result in a homepage server error.
+		"""
+
+		# Clear the database of hashtag objects
+		Hashtag.objects.all().delete()
+
+		factory = RequestFactory()
+
+		request = factory.get(self.url)
+		response = views.Index.as_view()(request)
+
+		self.assertEqual(response.status_code, 200)

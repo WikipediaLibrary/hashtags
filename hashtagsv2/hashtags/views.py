@@ -18,11 +18,15 @@ class Index(ListView):
     paginate_by = 20
 
     def get_context_data(self, *args, **kwargs):
-        latest_datetime = Hashtag.objects.latest('timestamp').timestamp
-        diff = datetime.now(timezone.utc) - latest_datetime
-        if diff.seconds > 3600:
-            messages.add_message(self.request, messages.INFO,
-            'Note that the latest edits may not currently be reflected in the tool.')
+        # If we have any hashtags in the database, check if we appear
+        # to be up-to-date.
+        all_hashtags = Hashtag.objects.all()
+        if all_hashtags:
+            latest_datetime = all_hashtags.latest('timestamp').timestamp
+            diff = datetime.now(timezone.utc) - latest_datetime
+            if diff.seconds > 3600:
+                messages.add_message(self.request, messages.INFO,
+                'Note that the latest edits may not currently be reflected in the tool.')
 
         context = super().get_context_data(**kwargs)
 
