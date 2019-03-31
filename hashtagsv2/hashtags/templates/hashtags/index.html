@@ -3,6 +3,7 @@
 {% load url_replace %}
 
 {% block content %}
+<script src="https://apis.google.com/js/platform.js" async defer></script>
   <div class="container">
     {% if messages %}
         {% for message in messages %}
@@ -84,7 +85,12 @@
                   #{{ query }}
                 {% endfor %}
               </h2>
-                <a href="csv/?{{ query_string }}">Download CSV</a>
+                <a href="csv/?{{ query_string }}">Download CSV</a><br>
+                <div class="g-savetodrive"
+                  data-src="csv/?{{ query_string }}"
+                  data-filename="hashtags.csv"
+                  data-sitename="Wikimedia hashtag search">
+                </div>
             </div>
             <div class="one-third column">
               <p class="stats-date-range">{{ oldest }} - {{ newest }}</p>
