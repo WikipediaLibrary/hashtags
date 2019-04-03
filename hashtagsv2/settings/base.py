@@ -71,8 +71,8 @@ DATABASES = {
 # Haystack
 HAYSTACK_CONNECTIONS = {
     'default': {
-        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
-        'URL': 'es:9200',
+        'ENGINE': 'haystack.backends.elasticsearch2_backend.Elasticsearch2SearchEngine',
+        'URL': 'elastic:9200',
         'INDEX_NAME': 'haystack',
     },
 }

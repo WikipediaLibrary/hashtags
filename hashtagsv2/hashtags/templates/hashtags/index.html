@@ -11,13 +11,13 @@
     {% endif %}
     <div cass="row">
       {% comment %} We show a different search bar if there are results vs not. {% endcomment %}
-      {% if not hashtags %}
+      {% if not page_obj.object_list %}
         <div class="eight columns">
   	      <form id="tag-search">
   	        <div class="row">
   	          <div class="seven columns">
-                {{ form.query.label }}
-  	            {{ form.query }}
+                {{ form.q.label }}
+  	            {{ form.q }}
   	          </div>
   	          <div class="five columns">
                 {{ form.project.label }}
@@ -56,7 +56,7 @@
         <form id="tag-search">
           <div class="row">
             <div class="four columns">
-              {{ form.query }}
+              {{ form.q }}
             </div>
             <div class="four columns">
               {{ form.project }}
@@ -118,7 +118,7 @@
             </tr>
           </thead>
           <tbody>
-          {% for hashtag in hashtags %}
+          {% for hashtag in page_obj.object_list %}
             <tr>
               <td>
                 <p class="title">
