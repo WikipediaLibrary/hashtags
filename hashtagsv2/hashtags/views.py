@@ -1,14 +1,19 @@
+
+
+
+
 import csv
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Count
 from django.views.generic import FormView, ListView, TemplateView
-
+from django.shortcuts import render_to_response
 from .forms import SearchForm
 from .helpers import split_hashtags, hashtag_queryset
 from .models import Hashtag
+import json
 
 class Index(ListView):
     model = Hashtag
@@ -18,17 +23,13 @@ class Index(ListView):
     paginate_by = 20
 
     def get_context_data(self, *args, **kwargs):
-        # If we have any hashtags in the database, check if we appear
-        # to be up-to-date.
-        all_hashtags = Hashtag.objects.all()
-        if all_hashtags:
-            latest_datetime = all_hashtags.latest('timestamp').timestamp
-            diff = datetime.now(timezone.utc) - latest_datetime
-            if diff.seconds > 3600:
-                messages.add_message(self.request, messages.INFO,
-                'Note that the latest edits may not currently be reflected in the tool.')
-
         context = super().get_context_data(**kwargs)
+
+        top_tags = Hashtag.objects.filter(
+                timestamp__gt = datetime.now() - timedelta(days=30)
+            ).values_list('hashtag').annotate(
+            count=Count('hashtag')).order_by('-count')[:10]
+        context['top_tags'] = [x[0] for x in top_tags]
 
         # Make sure we're setting initial values in case user has
         # already submitted something.
@@ -41,23 +42,15 @@ class Index(ListView):
             context['hashtag_query_list'] = split_hashtags(hashtag_query)
 
             # Context for the stats section
-            num_edits = hashtags.count()
-            context['revisions'] = num_edits
-            context['oldest'] = hashtags[num_edits-1].timestamp.date()
-            context['newest'] = hashtags.first().timestamp.date()
+            context['oldest'] = hashtags.order_by('timestamp')[0].timestamp.date()
+            context['newest'] = hashtags.latest('timestamp').timestamp.date()
+            context['revisions'] = hashtags.count()
             context['pages'] = hashtags.values('page_title', 'domain').distinct().count()
             context['users'] = hashtags.values('username').distinct().count()
             context['projects'] = hashtags.values('domain').distinct().count()
 
             # The GET parameters from the URL, for formatting links
             context['query_string'] = self.request.META['QUERY_STRING']
-        else:
-            # We don't need top tags if we're showing results
-            top_tags = Hashtag.objects.filter(
-                timestamp__gt=datetime.now() - timedelta(days=30)
-            ).values_list('hashtag').annotate(
-                count=Count('hashtag')).order_by('-count')[:10]
-            context['top_tags'] = [x[0] for x in top_tags]
 
         return context
 
@@ -72,9 +65,9 @@ class Index(ListView):
             else:    
                 hashtag_qs = hashtag_queryset(form_data)
 
-                if not hashtag_qs:
+                if hashtag_qs.count() == 0:
                     messages.add_message(self.request, messages.INFO,
-                        'No results found.')                     
+                        'No results found.')
 
             return hashtag_qs
 
@@ -123,3 +116,22 @@ def json_download(request):
 
 class Docs(TemplateView):
     template_name = 'hashtags/docs.html'
+
+
+def graph(request):
+
+    pages = Hashtag.objects.all().distinct().count();
+    context = {'pages': pages }
+    return render_to_response('hashtags/graph.html', context)
+
+    # array = ([
+    #       ['Year', 'Sales', 'Expenses'],
+    #       ['2004',  1000,      400],
+    #       ['2005',  1170,      460],
+    #       ['2006',  660,       1120],
+    #       ['2007',  1030,      540]
+    #     ]);
+    # return render_to_response('hashtags/graph.html',{'array': json.dumps(array)})
+
+
+

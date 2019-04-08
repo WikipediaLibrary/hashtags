@@ -1,0 +1,23 @@
+{% extends "hashtags/base.html" %}
+
+{% block content %}
+<div>
+    <h2 class="md-text">{{ title }}</h2>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript">
+  google.load("visualization", "1", {packages:["corechart"]});
+  google.setOnLoadCallback(drawChart);
+  function drawChart() {
+   var djangoData = '{{ context }}';
+   var data = google.visualization.arrayToDataTable(djangoData);
+
+    var options = {
+      title: 'hastags'
+    };
+
+    var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+    chart.draw(data, options);
+  }
+</script>
+</div>
+{% endblock content %}
