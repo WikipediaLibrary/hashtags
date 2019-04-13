@@ -6,3 +6,4 @@ project_settings.py
 *.log
 static
 .coverage
+coverage.xml
