@@ -2,9 +2,6 @@ sudo: required
 services:
   - docker
 
-env:
-  - ci_env=`bash <(curl -s https://codecov.io/env)`
-
 before_script:
 
   # MySQL starts by default, resulting in a port conflict
@@ -12,7 +9,7 @@ before_script:
 
 script:
   - docker-compose up -d --build
-  - docker exec hashtags_app_1 python manage.py test $ci_env
+  - docker exec hashtags_app_1 python manage.py test
 
 after_script:
   - docker images
