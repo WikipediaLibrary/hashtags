@@ -5,3 +5,5 @@ project_settings.py
 *.csv
 *.log
 static
+.coverage
+coverage.xml
