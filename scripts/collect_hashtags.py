@@ -34,6 +34,9 @@ for event in EventSource(url):
         hashtag_matches = hashtag_match(change['comment'])
         if hashtag_matches and valid_edit(change):
             for hashtag in hashtag_matches:
+                if 'id' not in change:
+                    print("Couldn't find recent changes ID in data. Skipping.")
+                    continue
                 if db.is_duplicate(hashtag, change['id']):
                     print("Skipped duplicate {hashtag} (rc_id = {id})".format(
                         hashtag=hashtag, id=change['id']))
