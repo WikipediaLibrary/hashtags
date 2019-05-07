@@ -20,9 +20,9 @@ class Index(ListView):
     def get_context_data(self, *args, **kwargs):
         # If we have any hashtags in the database, check if we appear
         # to be up-to-date.
-        all_hashtags = Hashtag.objects.all()
-        if all_hashtags:
-            latest_datetime = all_hashtags.latest('timestamp').timestamp
+        all_hashtags = Hashtag.objects.all().count()
+        if all_hashtags > 0:
+            latest_datetime = Hashtag.objects.all().latest('timestamp').timestamp
             diff = datetime.now(timezone.utc) - latest_datetime
             if diff.seconds > 3600:
                 messages.add_message(self.request, messages.INFO,
