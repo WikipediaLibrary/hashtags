@@ -123,3 +123,23 @@ def json_download(request):
 
 class Docs(TemplateView):
     template_name = 'hashtags/docs.html'
+
+def top_project_statistics_data(request):
+    # Returns top 10 projects in decreasing order of number of edits.
+    # We will need this info as x-axis and y-axis when rendering chart.
+    request_dict = request.GET.dict()
+
+    projects = []
+    edits_per_project = []
+
+    hashtags = hashtag_queryset(request_dict)
+    qs = hashtags.values('domain').annotate(edits = Count('rc_id')).order_by('-edits')[:10]
+    for item in qs:
+        projects.append(item['domain'])
+        edits_per_project.append(item['edits'])
+
+    data = {
+        'projects': projects,
+        'edits_per_project': edits_per_project
+    }
+    return JsonResponse(data)
