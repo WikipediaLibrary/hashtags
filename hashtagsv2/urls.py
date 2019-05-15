@@ -20,7 +20,8 @@ from hashtagsv2.hashtags.views import (Index,
                                       csv_download,
                                       json_download,
                                       Docs,
-                                      top_project_statistics_data)
+                                      top_project_statistics_data,
+                                      top_user_statistics_data)
 
 urlpatterns = [
 	path('', Index.as_view(), name='index'),
@@ -29,4 +30,5 @@ urlpatterns = [
     path('docs/', Docs.as_view(), name='docs'),
     path('admin/', admin.site.urls, name='admin'),
     path('api/top_project_stats/', top_project_statistics_data, name='top_project_statistics_data'),
+    path('api/top_user_stats/', top_user_statistics_data, name='top_user_statistics_data')
 ]

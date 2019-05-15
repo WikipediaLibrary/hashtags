@@ -143,3 +143,22 @@ def top_project_statistics_data(request):
         'edits_per_project': edits_per_project
     }
     return JsonResponse(data)
+
+def top_user_statistics_data(request):
+    # Returns top 10 projects in decreasing order of number of edits.
+    request_dict = request.GET.dict()
+
+    usernames = []
+    edits_per_user = []
+
+    hashtags = hashtag_queryset(request_dict)
+    qs = hashtags.values('username').annotate(edits = Count('rc_id')).order_by('-edits')[:10]
+    for item in qs:
+        usernames.append(item['username'])
+        edits_per_user.append(item['edits'])
+
+    data = {
+        'usernames': usernames,
+        'edits_per_user': edits_per_user
+    }
+    return JsonResponse(data)
