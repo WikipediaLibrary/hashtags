@@ -1,9 +1,11 @@
 import csv
 from datetime import datetime, timedelta, timezone
+from dateutil.relativedelta import relativedelta
 
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Count
+from django.db.models.functions import TruncMonth, TruncDay, TruncYear
 from django.views.generic import FormView, ListView, TemplateView
 
 from .forms import SearchForm
@@ -160,5 +162,73 @@ def top_user_statistics_data(request):
     data = {
         'usernames': usernames,
         'edits_per_user': edits_per_user
+    }
+    return JsonResponse(data)
+
+def time_statistics_data(request):
+    request_dict = request.GET.dict()
+
+    edits_array = []
+    time_array = []
+
+    hashtags = hashtag_queryset(request_dict)
+    earliest_date = hashtags.earliest('timestamp').timestamp.date()
+    latest_date = hashtags.latest('timestamp').timestamp.date()
+
+    date_range = latest_date - earliest_date
+    # key value pairs of date unit and number of edits
+    time_dic = {}
+
+    # Split by days
+    if date_range.days < 90:
+        qs = hashtags.annotate(day = TruncDay('timestamp')).values('day').annotate(edits = Count('rc_id')).order_by()
+        
+        for item in qs:
+            time_dic[item['day'].date()] = item['edits']
+        while earliest_date <= latest_date:
+            time_array.append(earliest_date.strftime("%Y-%m-%d"))
+            #If there are edits on a day, append number of edits else append 0
+            if earliest_date in time_dic:
+                temp = time_dic.pop(earliest_date)
+                edits_array.append(temp)
+            else:
+                edits_array.append(0)
+            earliest_date = earliest_date + timedelta(days=1)
+    # Split by months
+    elif date_range.days >=90 and date_range.days <1095:
+        qs = hashtags.annotate(month = TruncMonth('timestamp')).values('month').annotate(edits = Count('rc_id')).order_by()
+        for item in qs:
+            time_dic[item['month'].date()] = item['edits']
+        
+        earliest_date = earliest_date.replace(day=1)
+        latest_date = latest_date.replace(day=1)
+        while earliest_date <= latest_date:
+            time_array.append(earliest_date.strftime("%b-%Y"))
+            if earliest_date in time_dic:
+                temp = time_dic.pop(earliest_date)
+                edits_array.append(temp)
+            else:
+                edits_array.append(0)
+            earliest_date = earliest_date + relativedelta(months= +1)
+    # Split by years
+    else:
+        qs = hashtags.annotate(year = TruncYear('timestamp')).values('year').annotate(edits = Count('rc_id')).order_by()       
+        for item in qs:
+            time_dic[item['year'].date()] = item['edits']
+          
+        earliest_date = earliest_date.replace(day=1,month=1)
+        latest_date = latest_date.replace(day=1,month=1)
+        while earliest_date <= latest_date:
+            time_array.append(earliest_date.strftime("%Y"))
+            if earliest_date in time_dic:
+                temp = time_dic.pop(earliest_date)
+                edits_array.append(temp)
+            else:
+                edits_array.append(0)
+            earliest_date = earliest_date + relativedelta(years= +1)
+
+    data = {
+        'edits_array': edits_array,
+        'time_array': time_array
     }
     return JsonResponse(data)
