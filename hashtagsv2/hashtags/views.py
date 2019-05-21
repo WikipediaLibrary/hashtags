@@ -172,8 +172,8 @@ def time_statistics_data(request):
     time_array = []
 
     hashtags = hashtag_queryset(request_dict)
-    earliest_date = hashtags.earliest('timestamp').timestamp.date()
-    latest_date = hashtags.latest('timestamp').timestamp.date()
+    earliest_date = hashtags[len(hashtags)-1].timestamp.date()
+    latest_date = hashtags.first().timestamp.date()
 
     date_range = latest_date - earliest_date
     # key value pairs of date unit and number of edits
