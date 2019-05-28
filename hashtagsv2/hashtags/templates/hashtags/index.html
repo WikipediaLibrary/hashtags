@@ -84,7 +84,8 @@
                   #{{ query }}
                 {% endfor %}
               </h2>
-                <a href="csv/?{{ query_string }}">Download CSV</a>
+                <a href="csv/?{{ query_string }}"><button class="button-primary">Download CSV</button></a>&nbsp;
+                <a href="graph/?{{ query_string }}"><button class="button-primary">Show statistics</button>
             </div>
             <div class="one-third column">
               <p class="stats-date-range">{{ oldest }} - {{ newest }}</p>
