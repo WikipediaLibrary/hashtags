@@ -10,7 +10,7 @@ from django.views.generic import FormView, ListView, TemplateView, View
 from django.shortcuts import render
 
 from .forms import SearchForm
-from .helpers import split_hashtags, hashtag_queryset, get_statistics_context
+from .helpers import split_hashtags, hashtag_queryset, get_hashtags_context
 from .models import Hashtag
 
 class Index(ListView):
@@ -39,21 +39,7 @@ class Index(ListView):
 
         hashtags = self.object_list
         if hashtags:
-
-            hashtag_query = self.request.GET.get('query')
-            context['hashtag_query_list'] = split_hashtags(hashtag_query)
-
-            # Context for the stats section
-            num_edits = hashtags.count()
-            context['revisions'] = num_edits
-            context['oldest'] = hashtags[num_edits-1].timestamp.date()
-            context['newest'] = hashtags.first().timestamp.date()
-            context['pages'] = hashtags.values('page_title', 'domain').distinct().count()
-            context['users'] = hashtags.values('username').distinct().count()
-            context['projects'] = hashtags.values('domain').distinct().count()
-
-            # The GET parameters from the URL, for formatting links
-            context['query_string'] = self.request.META['QUERY_STRING']
+            context = get_hashtags_context(self.request, hashtags, context)
         else:
             # We don't need top tags if we're showing results
             top_tags = Hashtag.objects.filter(
@@ -240,6 +226,8 @@ class StatisticsView(View):
     def get(self, request):
         request_dict = request.GET.dict()
         hashtags = hashtag_queryset(request_dict)
-        context = get_statistics_context(request, hashtags)
-        context['form'] = self.form_class(request.GET)
-        return render(request, self.template_name, context)
+        context = {'form': self.form_class(request.GET)}
+        context['hashtags'] = hashtags
+        if hashtags:
+            context = get_hashtags_context(request, hashtags, context)
+        return render(request, self.template_name, context=context)
