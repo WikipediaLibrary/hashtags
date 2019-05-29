@@ -6,11 +6,11 @@ from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Count
 from django.db.models.functions import TruncMonth, TruncDay, TruncYear
-from django.views.generic import FormView, ListView, TemplateView
+from django.views.generic import FormView, ListView, TemplateView, View
 from django.shortcuts import render
 
 from .forms import SearchForm
-from .helpers import split_hashtags, hashtag_queryset
+from .helpers import split_hashtags, hashtag_queryset, get_statistics_context
 from .models import Hashtag
 
 class Index(ListView):
@@ -234,25 +234,12 @@ def time_statistics_data(request):
     }
     return JsonResponse(data)
 
-def graph(request):
-    request_dict = request.GET.dict()
-    hashtags = hashtag_queryset(request_dict)
-    context = {}
-    context['form'] = SearchForm(request.GET)
-    context['hashtags'] = hashtags
-
-    if hashtags:
-        hashtag_query = request.GET.get('query')
-        context['hashtag_query_list'] = split_hashtags(hashtag_query)
-        context['revisions'] = len(hashtags)
-        context['oldest'] = hashtags[len(hashtags)-1].timestamp.date()
-        context['newest'] = hashtags.first().timestamp.date()
-        context['pages'] = hashtags.values('page_title', 'domain').distinct().count()
-        context['users'] = hashtags.values('username').distinct().count()
-        context['projects'] = hashtags.values('domain').distinct().count()
-        context['query_string'] = request.META['QUERY_STRING']
-
-    # In case user searches from the graphs page and there are no results.
-    else:
-        context['message'] = "No data found."
-    return render(request, 'hashtags/graph.html', context=context)
+class StatisticsView(View):
+    template_name = 'hashtags/graph.html'
+    form_class = SearchForm
+    def get(self, request):
+        request_dict = request.GET.dict()
+        hashtags = hashtag_queryset(request_dict)
+        context = get_statistics_context(request, hashtags)
+        context['form'] = self.form_class(request.GET)
+        return render(request, self.template_name, context)

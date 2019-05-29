@@ -61,3 +61,21 @@ def hashtag_queryset(request_dict):
                 ).distinct()
 
     return ordered_queryset
+
+def get_statistics_context(request, hashtags):
+    # Context data for StatisticsView
+    context = {}
+    if hashtags:
+        hashtag_query = request.GET.get('query')
+        context['hashtag_query_list'] = split_hashtags(hashtag_query)
+        context['revisions'] = len(hashtags)
+        context['oldest'] = hashtags[len(hashtags)-1].timestamp.date()
+        context['newest'] = hashtags.first().timestamp.date()
+        context['pages'] = hashtags.values('page_title', 'domain').distinct().count()
+        context['users'] = hashtags.values('username').distinct().count()
+        context['projects'] = hashtags.values('domain').distinct().count()
+        context['query_string'] = request.META['QUERY_STRING']
+        context['hashtags'] = hashtags
+    else:
+        context['message'] = "No data found."
+    return context
