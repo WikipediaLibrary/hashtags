@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/Samwalton9/hashtags.svg?branch=master)](https://travis-ci.org/Samwalton9/hashtags)
+[![Build Status](https://travis-ci.org/WikipediaLibrary/hashtags.svg?branch=master)](https://travis-ci.org/WikipediaLibrary/hashtags)
 [![codecov](https://codecov.io/gh/Samwalton9/hashtags/branch/master/graph/badge.svg)](https://codecov.io/gh/Samwalton9/hashtags)
 
 # Hashtags
