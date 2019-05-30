@@ -21,7 +21,7 @@ def insert_db(hashtag, change):
         (%s, %s, %s, %s, %s, %s, %s, %s)
         """
 
-    dt_without_plus = change['meta']['dt'].split("+")[0]
+    dt_without_plus = change['meta']['dt'][:19]
     change_dt = dt_without_plus.replace("T", " ")
 
     # Log actions such as page moves and image uploads have no
