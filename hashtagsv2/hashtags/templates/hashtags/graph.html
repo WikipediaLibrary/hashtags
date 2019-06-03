@@ -3,6 +3,8 @@
 {% load url_replace %}
 
 {% block content %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
 <div class="container">
     <form id="tag-search">
         <div class="row">
@@ -65,6 +67,133 @@
         </div>
     </div>
     <hr>
+    <div class="row"><h1>Top projects</h1></div>
+    <div class="row">
+        <div class="two-thirds column">
+            <canvas id="projectsChart" width="400" height="400"></canvas>
+        </div>
+        <div class="one-third column">
+            <button>Download CSV</button>
+            <button>View Full stats</button>
+        </div>
+    </div>
+    <hr>
+    <div class="row"><h1>Top users</h1></div>
+    <div class="row">
+        <div class="two-thirds column">
+            <canvas id="usersChart" width="400" height="400"></canvas>
+        </div>
+        <div class="one-third column">
+            <button>Download CSV</button>
+            <button>View Full stats</button>
+        </div>
+    </div>
+    <hr>
+    <div class="row"><h1>Edits over time</h1></div>
+    <div class="row">
+        <div>
+            <canvas id="timeChart" width="400" height="400"></canvas>
+        </div>
+        <div class="row">
+            <button>Download CSV</button>
+        </div>
+    </div>
+    <hr>
+    <script> var url_param = '{{ query_string }}'; </script>
+    <script>
+        $.ajax({
+            url: '/api/top_project_stats/?' + url_param,
+            dataType: 'json',
+            success: function(data){
+                var ctx = document.getElementById('projectsChart');
+                var projectsChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data['projects'],
+                        datasets: [{
+                            label: 'number of Edits',
+                            data: data['edits_per_project'],
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',    
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true,
+                                    callback: function (value) { if (Number.isInteger(value)) { return value; } }
+                                }
+                            }]
+                        },
+                    }
+                });
+            }
+        })
+        $.ajax({
+            url: '/api/top_user_stats/?' + url_param,
+            dataType: 'json',
+            success: function(data){
+                var ctx = document.getElementById('usersChart');
+                var projectsChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data['usernames'],
+                        datasets: [{
+                            label: 'number of Edits',
+                            data: data['edits_per_user'],
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',    
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true,
+                                    callback: function (value) { if (Number.isInteger(value)) { return value; } }
+                                }
+                            }]
+                        },
+                    }
+                });
+            }
+        })
+        $.ajax({
+            url: '/api/time_stats/?' + url_param,
+            dataType: 'json',
+            success: function(data){
+                var ctx = document.getElementById('timeChart');
+                var timeChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data['time_array'],
+                        datasets: [{
+                            label: 'number of Edits',
+                            data: data['edits_array'],
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',    
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true,
+                                    callback: function (value) { if (Number.isInteger(value)) { return value; } }
+                                }
+                            }]
+                        },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+        })        
+    </script>
     {% endif %}
 </div>
 {% endblock content %}
