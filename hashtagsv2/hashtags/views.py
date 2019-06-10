@@ -231,3 +231,40 @@ class StatisticsView(View):
         if hashtags:
             context = get_hashtags_context(request, hashtags, context)
         return render(request, self.template_name, context=context)
+
+class All_users_view(ListView):
+    template_name = 'hashtags/all_users.html'
+    context_object_name = 'users_list'
+    paginate_by = 30
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(All_users_view, self).get_context_data(**kwargs)
+        request_dict = self.request.GET.dict()
+        hashtags = hashtag_queryset(request_dict)
+        # Context data for stats box
+        context = get_hashtags_context(self.request, hashtags, context)
+        return context
+
+    def get_queryset(self):
+        request_dict = self.request.GET.dict()
+        hashtags = hashtag_queryset(request_dict)
+        users_qs = hashtags.values('username').annotate(edits = Count('rc_id')).order_by('-edits')
+        return users_qs
+
+class All_projects_view(ListView):
+    template_name = 'hashtags/all_projects.html'
+    context_object_name = 'projects_list'
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(All_projects_view, self).get_context_data(**kwargs)
+        request_dict = self.request.GET.dict()
+        hashtags = hashtag_queryset(request_dict)
+        # Context data for stats box
+        context = get_hashtags_context(self.request, hashtags, context)
+        return context
+
+    def get_queryset(self):
+        request_dict = self.request.GET.dict()
+        hashtags = hashtag_queryset(request_dict)
+        projects_qs = hashtags.values('domain').annotate(edits = Count('rc_id')).order_by('-edits')
+        return projects_qs

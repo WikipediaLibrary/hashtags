@@ -1,0 +1,57 @@
+{% extends "hashtags/base.html" %}
+{% load static %}
+{% load url_replace %}
+
+{% block content %}
+<div class="container">
+    <div class="info">
+        <div class="row">
+            <div class="two-thirds column">
+            <h2>
+                {% for query in hashtag_query_list %}
+                #{{ query }}
+                {% endfor %}
+            </h2>
+            <h2>Projects</h2>
+            </div>
+            <div class="one-third column">
+                <p class="stats-date-range">{{ oldest }} - {{ newest }}</p>
+                <table class="stats-table">
+                    <tr>
+                        <td class="stat">{{ revisions }}</td>
+                        <td class="stat-label">revision{{ revisions|pluralize:"s" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="stat">{{ pages }}</td> 
+                        <td class="stat-label">page{{ pages|pluralize:"s" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="stat">{{ users }}</td>
+                        <td class="stat-label">user{{ users|pluralize:"s" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="stat">{{ projects }}</td>
+                        <td class="stat-label">project{{ projects|pluralize:"s" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <table class="u-full-width tablesorter">
+        <thead>
+            <tr>
+                <th>Project</th>
+                <th>Edits</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for project in projects_list %}
+            <tr>
+                <td>{{ project.domain }}</td>
+                <td>{{ project.edits }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock content %}
