@@ -73,7 +73,7 @@
             <canvas id="projectsChart" width="400" height="400"></canvas>
         </div>
         <div class="one-third column">
-            <button>Download CSV</button>
+            <a href="/projects_csv/?{{ query_string }}"><button>Download CSV</button></a>
             <a href="/all_projects/?{{ query_string }}"><button>View Full Stats</button></a>
         </div>
     </div>
@@ -84,7 +84,7 @@
             <canvas id="usersChart" width="400" height="400"></canvas>
         </div>
         <div class="one-third column">
-            <button>Download CSV</button>
+            <a href="/users_csv/?{{ query_string }}"><button>Download CSV</button></a>
             <a href="/all_users/?{{ query_string }}"><button>View Full Stats</button></a>    
         </div>
     </div>
@@ -95,7 +95,7 @@
             <canvas id="timeChart" width="400" height="400"></canvas>
         </div>
         <div class="row">
-            <button>Download CSV</button>
+            <a href="/time_csv/?{{ query_string }}"><button>Download CSV</button></a>
         </div>
     </div>
     <hr>

@@ -248,7 +248,7 @@ class All_users_view(ListView):
     def get_queryset(self):
         request_dict = self.request.GET.dict()
         hashtags = hashtag_queryset(request_dict)
-        users_qs = hashtags.values('username').annotate(edits = Count('rc_id')).order_by('-edits')
+        users_qs = hashtags.values('username').annotate(edits = Count('rc_id')).order_by('username')
         return users_qs
 
 class All_projects_view(ListView):
@@ -268,3 +268,54 @@ class All_projects_view(ListView):
         hashtags = hashtag_queryset(request_dict)
         projects_qs = hashtags.values('domain').annotate(edits = Count('rc_id')).order_by('-edits')
         return projects_qs
+
+def users_csv(request):
+    request_dict = request.GET.dict()
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="hashtags_users.csv"'
+
+    hashtags = hashtag_queryset(request_dict)
+    users_qs = hashtags.values('username').annotate(edits = Count('rc_id')).order_by('-edits')
+    writer = csv.writer(response)
+    writer.writerow(['User', 'Edits'])
+    for user in users_qs:
+        writer.writerow([user['username'], user['edits']])
+    return response
+
+def projects_csv(request):
+    request_dict = request.GET.dict()
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="hashtags_projects.csv"'
+
+    hashtags = hashtag_queryset(request_dict)
+    projects_qs = hashtags.values('domain').annotate(edits = Count('rc_id')).order_by('-edits')
+    writer = csv.writer(response)
+    writer.writerow(['Project','Edits'])
+    for project in projects_qs:
+        writer.writerow([project['domain'], project['edits']])
+    return response
+
+def time_csv(request):
+    request_dict = request.GET.dict()
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="hashtags_dates.csv"'
+
+    hashtags = hashtag_queryset(request_dict)
+    earliest_date = hashtags[len(hashtags)-1].timestamp.date()
+    latest_date = hashtags.first().timestamp.date()
+
+    time_dic = {}
+    qs = hashtags.annotate(day = TruncDay('timestamp')).values('day').annotate(edits = Count('rc_id')).order_by()
+    for item in qs:
+        time_dic[item['day'].date()] = item['edits']
+    writer = csv.writer(response)
+    writer.writerow(['Date','Edits'])
+    while earliest_date <= latest_date:
+        if earliest_date in time_dic:
+            temp = time_dic.pop(earliest_date)
+            writer.writerow([earliest_date.strftime("%Y-%m-%d"), temp])
+        else:
+            writer.writerow([earliest_date.strftime("%Y-%m-%d"), 0])
+        earliest_date = earliest_date + timedelta(days=1)
+    
+    return response
