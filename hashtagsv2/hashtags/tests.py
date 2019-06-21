@@ -284,3 +284,46 @@ class HashtagSearchTest(TestCase):
 		response = views.Index.as_view()(request)
 
 		self.assertEqual(response.status_code, 200)
+
+class StatisticsTest(TestCase):
+	def setUp(self):
+		# 5 edits for project: 'en.wikipedia.org' and username: 'a'
+		for i in range(1,6):
+			HashtagFactory(hashtag='test_hashtag', domain='en.wikipedia.org', username='a', rc_id=i)
+
+		# 3 edits for project: 'fr.wikipedia.org' and username: 'b'
+		for i in range(6,9):
+			HashtagFactory(hashtag='test_hashtag', domain='fr.wikipedia.org', username='b', rc_id=i)
+
+		# 2 edits for project: 'es.wikipedia.org' and username: 'c'
+		for i in range(9,11):
+			HashtagFactory(hashtag='test_hashtag', domain='es.wikipedia.org', username='c', rc_id=i)
+	
+	def test_top_project_statistics(self):
+		# Test if top projects stats view is giving correct results
+		factory = RequestFactory()
+
+		data = {
+			'query': 'test_hashtag'
+		}
+		request = factory.get('/api/top_project_stats', data)
+		response = views.top_project_statistics_data(request)
+		page_content = response.content.decode('utf-8')
+		dict = loads(page_content)
+		self.assertEqual(dict['projects'], ['en.wikipedia.org', 'fr.wikipedia.org', 'es.wikipedia.org'])
+		self.assertEqual(dict['edits_per_project'], [5, 3, 2])
+
+	def test_top_user_statistics(self):
+		# Test if top user stats view is giving correct results
+		factory = RequestFactory()
+
+		data = {
+			'query': 'test_hashtag'
+		}
+
+		request = factory.get('/api/top_user_stats', data)
+		response = views.top_user_statistics_data(request)
+		page_content = response.content.decode('utf-8')
+		dict = loads(page_content)
+		self.assertEqual(dict['usernames'], ['a', 'b', 'c'])
+		self.assertEqual(dict['edits_per_user'], [5, 3, 2])
