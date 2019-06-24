@@ -289,22 +289,22 @@ class StatisticsTest(TestCase):
 	def setUp(self):
 		# 5 edits for project: 'en.wikipedia.org' and username: 'a'
 		for i in range(1,6):
-			HashtagFactory(hashtag='test_hashtag', domain='en.wikipedia.org', username='a', rc_id=i)
+			HashtagFactory(hashtag='test_hashtag1', domain='en.wikipedia.org', username='a', rc_id=i, timestamp=datetime(2016,2,1))
 
 		# 3 edits for project: 'fr.wikipedia.org' and username: 'b'
 		for i in range(6,9):
-			HashtagFactory(hashtag='test_hashtag', domain='fr.wikipedia.org', username='b', rc_id=i)
+			HashtagFactory(hashtag='test_hashtag1', domain='fr.wikipedia.org', username='b', rc_id=i, timestamp=datetime(2016,2,2))
 
 		# 2 edits for project: 'es.wikipedia.org' and username: 'c'
 		for i in range(9,11):
-			HashtagFactory(hashtag='test_hashtag', domain='es.wikipedia.org', username='c', rc_id=i)
+			HashtagFactory(hashtag='test_hashtag1', domain='es.wikipedia.org', username='c', rc_id=i, timestamp=datetime(2016,2,4))
 	
 	def test_top_project_statistics(self):
 		# Test if top projects stats view is giving correct results
 		factory = RequestFactory()
 
 		data = {
-			'query': 'test_hashtag'
+			'query': 'test_hashtag1'
 		}
 		request = factory.get('/api/top_project_stats', data)
 		response = views.top_project_statistics_data(request)
@@ -318,12 +318,98 @@ class StatisticsTest(TestCase):
 		factory = RequestFactory()
 
 		data = {
-			'query': 'test_hashtag'
+			'query': 'test_hashtag1'
 		}
-
 		request = factory.get('/api/top_user_stats', data)
 		response = views.top_user_statistics_data(request)
 		page_content = response.content.decode('utf-8')
 		dict = loads(page_content)
 		self.assertEqual(dict['usernames'], ['a', 'b', 'c'])
 		self.assertEqual(dict['edits_per_user'], [5, 3, 2])
+
+	def test_edits_over_days(self):
+		# Test edits over days
+		factory =  RequestFactory()
+		
+		data = {
+			'query': 'test_hashtag1'
+		}
+		request = factory.get('/api/time_stats', data)
+		response = views.time_statistics_data(request)
+		page_content = response.content.decode('utf-8')
+		dict = loads(page_content)
+		self.assertEqual(dict['time_array'], ['2016-02-01', '2016-02-02', '2016-02-03', '2016-02-04'])
+		self.assertEqual(dict['edits_array'], [5, 3, 0, 2])
+
+	def test_edits_over_months(self):
+		# Test edits over month
+		for i in range(1,5):
+			HashtagFactory(hashtag='test_hashtag2', rc_id=20+i, timestamp=datetime(2016,i,1))
+
+		factory =  RequestFactory()
+		
+		data = {
+			'query': 'test_hashtag2'
+		}
+		request = factory.get('/api/time_stats', data)
+		response = views.time_statistics_data(request)
+		page_content = response.content.decode('utf-8')
+		dict = loads(page_content)
+		self.assertEqual(dict['time_array'], ['Jan-2016', 'Feb-2016', 'Mar-2016', 'Apr-2016'])
+		self.assertEqual(dict['edits_array'], [1, 1, 1, 1])
+
+	def test_edits_over_years(self):
+		# Test edits over years
+		for i in range(1,5):
+			HashtagFactory(hashtag='test_hashtag3', rc_id=20+i, timestamp=datetime(2015+i,2,1))
+
+		factory =  RequestFactory()
+		
+		data = {
+			'query': 'test_hashtag3'
+		}
+		request = factory.get('/api/time_stats', data)
+		response = views.time_statistics_data(request)
+		page_content = response.content.decode('utf-8')
+		dict = loads(page_content)
+		self.assertEqual(dict['time_array'], ['2016', '2017', '2018', '2019'])
+		self.assertEqual(dict['edits_array'], [1, 1, 1, 1])
+
+	def test_users_csv_view(self):
+		factory = RequestFactory()
+		
+		data = {
+			'query': 'test_hashtag1'
+		}
+		request = factory.get('/users_csv', data)
+		response = views.users_csv(request)
+		page_content = response.content
+
+		# CSV should contain 4 lines - header plus 3 entries
+		self.assertEqual(len(page_content.splitlines()), 4)
+
+	def test_projects_csv_view(self):
+		factory = RequestFactory()
+		
+		data = {
+			'query': 'test_hashtag1'
+		}
+		request = factory.get('/projects_csv', data)
+		response = views.projects_csv(request)
+		page_content = response.content
+
+		# CSV should contain 4 lines - header plus 3 entries
+		self.assertEqual(len(page_content.splitlines()), 4)
+
+	def test_time_csv_view(self):
+		factory = RequestFactory()
+		
+		data = {
+			'query': 'test_hashtag1'
+		}
+		request = factory.get('/time_csv', data)
+		response = views.time_csv(request)
+		page_content = response.content
+
+		# CSV should contain 5 lines - header plus 4 entries
+		self.assertEqual(len(page_content.splitlines()), 5)
