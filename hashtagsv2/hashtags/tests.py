@@ -345,6 +345,10 @@ class StatisticsTest(TestCase):
 		# Test edits over month
 		for i in range(1,5):
 			HashtagFactory(hashtag='test_hashtag2', rc_id=20+i, timestamp=datetime(2016,i,1))
+		# Some more edits in same month
+		HashtagFactory(hashtag='test_hashtag2', rc_id=1234, timestamp=datetime(2016,1,3))
+		HashtagFactory(hashtag='test_hashtag2', rc_id=12345, timestamp=datetime(2016,1,3))
+		HashtagFactory(hashtag='test_hashtag2', rc_id=123, timestamp=datetime(2016,3,7))
 
 		factory =  RequestFactory()
 		
@@ -356,12 +360,16 @@ class StatisticsTest(TestCase):
 		page_content = response.content.decode('utf-8')
 		dict = loads(page_content)
 		self.assertEqual(dict['time_array'], ['Jan-2016', 'Feb-2016', 'Mar-2016', 'Apr-2016'])
-		self.assertEqual(dict['edits_array'], [1, 1, 1, 1])
+		self.assertEqual(dict['edits_array'], [3, 1, 2, 1])
 
 	def test_edits_over_years(self):
 		# Test edits over years
 		for i in range(1,5):
 			HashtagFactory(hashtag='test_hashtag3', rc_id=20+i, timestamp=datetime(2015+i,2,1))
+		# More edits in same year
+		HashtagFactory(hashtag='test_hashtag3', rc_id=1234, timestamp=datetime(2016,1,3))
+		HashtagFactory(hashtag='test_hashtag3', rc_id=12345, timestamp=datetime(2017,5,3))
+		HashtagFactory(hashtag='test_hashtag3', rc_id=123, timestamp=datetime(2017,5,3))
 
 		factory =  RequestFactory()
 		
@@ -373,7 +381,7 @@ class StatisticsTest(TestCase):
 		page_content = response.content.decode('utf-8')
 		dict = loads(page_content)
 		self.assertEqual(dict['time_array'], ['2016', '2017', '2018', '2019'])
-		self.assertEqual(dict['edits_array'], [1, 1, 1, 1])
+		self.assertEqual(dict['edits_array'], [2, 3, 1, 1])
 
 	def test_users_csv_view(self):
 		factory = RequestFactory()
