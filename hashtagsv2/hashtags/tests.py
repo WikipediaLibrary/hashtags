@@ -421,3 +421,37 @@ class StatisticsTest(TestCase):
 
 		# CSV should contain 5 lines - header plus 4 entries
 		self.assertEqual(len(page_content.splitlines()), 5)
+
+	def test_all_users(self):
+		# Test if All_users_view is giving correct results
+		factory = RequestFactory()
+
+		data = {
+			'query': 'test_hashtag1'
+		}
+		request = factory.get('/all_users', data)
+		response = views.All_users_view.as_view()(request)
+		user_list = list(response.context_data['users_list'])
+		test_users_list = [
+			{'edits': 5, 'username': 'a'},
+			{'edits': 3, 'username': 'b'},
+			{'edits': 2, 'username': 'c'}
+		]
+		self.assertEqual(user_list, test_users_list)
+
+	def test_all_projects(self):
+		# Test if All_projects_view is giving correct results
+		factory = RequestFactory()
+
+		data = {
+			'query': 'test_hashtag1'
+		}
+		request = factory.get('/all_projects', data)
+		response = views.All_projects_view.as_view()(request)
+		project_list = list(response.context_data['projects_list'])
+		test_projects_list = [
+			{'edits': 5, 'domain': 'en.wikipedia.org'},
+			{'edits': 3, 'domain': 'fr.wikipedia.org'},
+			{'edits': 2, 'domain': 'es.wikipedia.org'}
+		]
+		self.assertEqual(project_list, test_projects_list)
