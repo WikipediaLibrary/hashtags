@@ -19,16 +19,17 @@ from django.urls import path
 from hashtagsv2.hashtags.views import (Index,
                                       csv_download,
                                       json_download,
-                                      Docs,
-                                      top_project_statistics_data,
-                                      top_user_statistics_data,
-                                      time_statistics_data,
-                                      StatisticsView,
-                                      All_users_view,
-                                      All_projects_view,
-                                      users_csv,
-                                      projects_csv,
-                                      time_csv)
+                                      Docs)
+
+from hashtagsv2.graphs.views import (top_project_statistics_data,
+                                    top_user_statistics_data,
+                                    time_statistics_data,
+                                    StatisticsView,
+                                    All_users_view,
+                                    All_projects_view,
+                                    users_csv,
+                                    projects_csv,
+                                    time_csv)
 
 urlpatterns = [
 	path('', Index.as_view(), name='index'),
