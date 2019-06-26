@@ -10,7 +10,7 @@ from django.views.generic import FormView, ListView, View
 from django.shortcuts import render
 
 from hashtagsv2.hashtags.forms import SearchForm
-from hashtagsv2.hashtags.helpers import split_hashtags, hashtag_queryset, get_hashtags_context
+from hashtagsv2.hashtags.helpers import hashtag_queryset, get_hashtags_context, results_count
 from hashtagsv2.hashtags.models import Hashtag
 
 def top_project_statistics_data(request):
@@ -22,7 +22,7 @@ def top_project_statistics_data(request):
     edits_per_project = []
 
     hashtags = hashtag_queryset(request_dict)
-    qs = hashtags.values('domain').annotate(edits = Count('rc_id')).order_by('-edits')[:10]
+    qs = results_count(hashtags, 'domain', '-edits')[:10]
     for item in qs:
         projects.append(item['domain'])
         edits_per_project.append(item['edits'])
@@ -41,7 +41,7 @@ def top_user_statistics_data(request):
     edits_per_user = []
 
     hashtags = hashtag_queryset(request_dict)
-    qs = hashtags.values('username').annotate(edits = Count('rc_id')).order_by('-edits')[:10]
+    qs = results_count(hashtags, 'username', '-edits')[:10]
     for item in qs:
         usernames.append(item['username'])
         edits_per_user.append(item['edits'])
@@ -148,7 +148,7 @@ class All_users_view(ListView):
     def get_queryset(self):
         request_dict = self.request.GET.dict()
         hashtags = hashtag_queryset(request_dict)
-        users_qs = hashtags.values('username').annotate(edits = Count('rc_id')).order_by('username')
+        users_qs = results_count(hashtags, 'username', 'username')
         return users_qs
 
 class All_projects_view(ListView):
@@ -166,7 +166,7 @@ class All_projects_view(ListView):
     def get_queryset(self):
         request_dict = self.request.GET.dict()
         hashtags = hashtag_queryset(request_dict)
-        projects_qs = hashtags.values('domain').annotate(edits = Count('rc_id')).order_by('-edits')
+        projects_qs = results_count(hashtags, 'domain', '-edits')
         return projects_qs
 
 def users_csv(request):
@@ -175,7 +175,7 @@ def users_csv(request):
     response['Content-Disposition'] = 'attachment; filename="hashtags_users.csv"'
 
     hashtags = hashtag_queryset(request_dict)
-    users_qs = hashtags.values('username').annotate(edits = Count('rc_id')).order_by('-edits')
+    users_qs = results_count(hashtags, 'username', 'username')
     writer = csv.writer(response)
     writer.writerow(['User', 'Edits'])
     for user in users_qs:
@@ -188,7 +188,7 @@ def projects_csv(request):
     response['Content-Disposition'] = 'attachment; filename="hashtags_projects.csv"'
 
     hashtags = hashtag_queryset(request_dict)
-    projects_qs = hashtags.values('domain').annotate(edits = Count('rc_id')).order_by('-edits')
+    projects_qs = results_count(hashtags, 'domain', '-edits')
     writer = csv.writer(response)
     writer.writerow(['Project','Edits'])
     for project in projects_qs:

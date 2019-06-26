@@ -3,6 +3,8 @@ from datetime import timedelta
 
 from .models import Hashtag
 
+from django.db.models import Count
+
 def split_hashtags(hashtag_list):
     split_hashtags_list = hashtag_list.split(",")
     stripped_hashtags = [x.strip() for x in split_hashtags_list]
@@ -79,3 +81,6 @@ def get_hashtags_context(request, hashtags, context):
     # The GET parameters from the URL, for formatting links
     context['query_string'] = request.META['QUERY_STRING']
     return context
+
+def results_count(qs, field, sort_param):
+    return qs.values(field).annotate(edits = Count('rc_id')).order_by(sort_param)

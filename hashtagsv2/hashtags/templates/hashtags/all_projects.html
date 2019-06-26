@@ -47,7 +47,7 @@
         <tbody>
             {% for project in projects_list %}
             <tr>
-                <td>{{ project.domain }}</td>
+                <td><a href="https://{{ project.domain }}">{{ project.domain }}</a></td>
                 <td>{{ project.edits }}</td>
             </tr>
             {% endfor %}

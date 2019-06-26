@@ -5,7 +5,6 @@ from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Count
 from django.views.generic import FormView, ListView, TemplateView, View
-from django.shortcuts import render
 
 from .forms import SearchForm
 from .helpers import split_hashtags, hashtag_queryset, get_hashtags_context
