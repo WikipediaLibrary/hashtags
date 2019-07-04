@@ -42,6 +42,7 @@
                     {% endfor %}
                 </h2>
                 <h2>Statistics</h2>
+                <a href="/?{{ query_string }}"><button>Show list</button></a>
             </div>
             <div class="one-third column">
                 <p class="stats-date-range">{{ oldest }} - {{ newest }}</p>
@@ -70,6 +71,9 @@
     <div class="row"><h1>Top projects</h1></div>
     <div class="row">
         <div class="two-thirds column">
+            <div align="center" id="loader1">
+                <img type="image/gif" src="{% static 'loader.gif' %}">
+            </div>
             <canvas id="projectsChart" width="400" height="400"></canvas>
         </div>
         <div class="one-third column">
@@ -81,6 +85,9 @@
     <div class="row"><h1>Top users</h1></div>
     <div class="row">
         <div class="two-thirds column">
+            <div align="center" id="loader2">
+                <img type="image/gif" src="{% static 'loader.gif' %}">
+            </div>
             <canvas id="usersChart" width="400" height="400"></canvas>
         </div>
         <div class="one-third column">
@@ -91,6 +98,9 @@
     <hr>
     <div class="row"><h1>Edits over time</h1></div>
     <div class="row">
+        <div align="center" id="loader3">
+            <img type="image/gif" src="{% static 'loader.gif' %}">
+        </div>
         <div>
             <canvas id="timeChart" width="400" height="400"></canvas>
         </div>
@@ -129,6 +139,9 @@
                         },
                     }
                 });
+            },
+            complete: function(){
+                $('#loader1').hide();
             }
         })
         $.ajax({
@@ -159,6 +172,9 @@
                         },
                     }
                 });
+            },
+            complete: function(){
+                $('#loader2').hide();
             }
         })
         $.ajax({
@@ -191,6 +207,9 @@
                         maintainAspectRatio: false
                     }
                 });
+            },
+            complete: function(){
+                $('#loader3').hide();
             }
         })        
     </script>
