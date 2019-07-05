@@ -88,25 +88,7 @@
                 <a href="csv/?{{ query_string }}"><button>Download CSV</button></a>
             </div>
             <div class="one-third column">
-              <p class="stats-date-range">{{ oldest }} - {{ newest }}</p>
-              <table class="stats-table">
-                <tr>
-                  <td class="stat">{{ revisions }}</td>
-                  <td class="stat-label">revision{{ revisions|pluralize:"s" }}</td>
-                </tr>
-                <tr>
-                  <td class="stat">{{ pages }}</td> 
-                  <td class="stat-label">page{{ pages|pluralize:"s" }}</td>
-                </tr>
-                <tr>
-                  <td class="stat">{{ users }}</td>
-                  <td class="stat-label">user{{ users|pluralize:"s" }}</td>
-                </tr>
-                <tr>
-                  <td class="stat">{{ projects }}</td>
-                  <td class="stat-label">project{{ projects|pluralize:"s" }}</td>
-                </tr>
-              </table>
+              {% include "hashtags/stats_table.html" %}
             </div>
           </div>
         </div>
