@@ -1,0 +1,43 @@
+{% extends "hashtags/base.html" %}
+{% load static %}
+{% load url_replace %}
+
+{% block content %}
+<div class="container">
+    <div class="info">
+        <a href="/?{{ query_string }}">Back to search results</a>
+        <div class="row">
+            <div class="two-thirds column">
+            <h2>
+                {% for query in hashtag_query_list %}
+                #{{ query }}
+                {% endfor %}
+            </h2>
+            <h2>Projects</h2>
+            </div>
+            <div class="one-third column">
+                {% include "hashtags/stats_table.html" %}
+            </div>
+        </div>
+    </div>
+    <table class="u-full-width tablesorter">
+        <thead>
+            <tr>
+                <th>Project</th>
+                <th>Edits</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for project in projects_list %}
+            <tr>
+                <td><a href="https://{{ project.domain }}">{{ project.domain }}</a></td>
+                <td>{{ project.edits }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="row">
+        <a href="/projects_csv/?{{ query_string }}"><button>Download CSV</button></a>
+    </div>
+</div>
+{% endblock content %}

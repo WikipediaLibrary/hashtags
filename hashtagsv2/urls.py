@@ -21,10 +21,29 @@ from hashtagsv2.hashtags.views import (Index,
                                       json_download,
                                       Docs)
 
+from hashtagsv2.graphs.views import (top_project_statistics_data,
+                                    top_user_statistics_data,
+                                    time_statistics_data,
+                                    StatisticsView,
+                                    All_users_view,
+                                    All_projects_view,
+                                    users_csv,
+                                    projects_csv,
+                                    time_csv)
+
 urlpatterns = [
 	path('', Index.as_view(), name='index'),
 	path('csv/', csv_download, name='csv_download'),
 	path('json/', json_download, name='json_download'),
     path('docs/', Docs.as_view(), name='docs'),
     path('admin/', admin.site.urls, name='admin'),
+    path('all_users/', All_users_view.as_view(), name='all_users'),
+    path('all_projects/', All_projects_view.as_view(), name='all_projects'),
+    path('users_csv/', users_csv, name='users_csv'),
+    path('projects_csv/', projects_csv, name='projects_csv'),
+    path('time_csv/', time_csv, name='time_csv'),
+    path('graph/', StatisticsView.as_view(), name='graph'),
+    path('api/top_project_stats/', top_project_statistics_data, name='top_project_statistics_data'),
+    path('api/top_user_stats/', top_user_statistics_data, name='top_user_statistics_data'),
+    path('api/time_stats/', time_statistics_data, name='time_statistics_data')
 ]

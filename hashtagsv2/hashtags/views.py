@@ -4,10 +4,10 @@ from datetime import datetime, timedelta, timezone
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Count
-from django.views.generic import FormView, ListView, TemplateView
+from django.views.generic import FormView, ListView, TemplateView, View
 
 from .forms import SearchForm
-from .helpers import split_hashtags, hashtag_queryset
+from .helpers import split_hashtags, hashtag_queryset, get_hashtags_context
 from .models import Hashtag
 
 class Index(ListView):
@@ -36,21 +36,7 @@ class Index(ListView):
 
         hashtags = self.object_list
         if hashtags:
-
-            hashtag_query = self.request.GET.get('query')
-            context['hashtag_query_list'] = split_hashtags(hashtag_query)
-
-            # Context for the stats section
-            num_edits = hashtags.count()
-            context['revisions'] = num_edits
-            context['oldest'] = hashtags[num_edits-1].timestamp.date()
-            context['newest'] = hashtags.first().timestamp.date()
-            context['pages'] = hashtags.values('page_title', 'domain').distinct().count()
-            context['users'] = hashtags.values('username').distinct().count()
-            context['projects'] = hashtags.values('domain').distinct().count()
-
-            # The GET parameters from the URL, for formatting links
-            context['query_string'] = self.request.META['QUERY_STRING']
+            context = get_hashtags_context(self.request, hashtags, context)
         else:
             # We don't need top tags if we're showing results
             top_tags = Hashtag.objects.filter(
