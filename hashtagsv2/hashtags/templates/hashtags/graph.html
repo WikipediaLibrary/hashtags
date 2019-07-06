@@ -42,7 +42,7 @@
                     {% endfor %}
                 </h2>
                 <h2>Statistics</h2>
-                <a href="/?{{ query_string }}"><button>Show list</button></a>
+                <a href="/?{% url_replace page=1 %}"><button>Show list</button></a>
             </div>
             <div class="one-third column">
                 {% include "hashtags/stats_table.html" %}
@@ -74,7 +74,7 @@
         </div>
         <div class="one-third column">
             <a href="/users_csv/?{{ query_string }}"><button>Download CSV</button></a>
-            <a href="/all_users/?{{ query_string }}"><button>View Full Stats</button></a>    
+            <a href="/all_users/?{% url_replace page=1 %}"><button>View Full Stats</button></a>    
         </div>
     </div>
     <hr>
