@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container">
     <div class="info">
-        <a href="/?{{ query_string }}">Back to search results</a>
+        <a href="/?{% url_replace page=1 %}">Back to search results</a>
         <div class="row">
             <div class="two-thirds column">
             <h2>
