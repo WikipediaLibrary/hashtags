@@ -4,6 +4,7 @@ from datetime import timedelta
 from .models import Hashtag
 
 from django.db.models import Count
+from urllib.parse import urlencode
 
 def split_hashtags(hashtag_list):
     split_hashtags_list = hashtag_list.split(",")
@@ -78,9 +79,15 @@ def get_hashtags_context(request, hashtags, context):
     context['users'] = hashtags.values('username').distinct().count()
     context['projects'] = hashtags.values('domain').distinct().count()
 
+    request_dict = request.GET.dict()
+
     # The GET parameters from the URL, for formatting links
-    context['query_string'] = request.META['QUERY_STRING']
+    # We don't require page parameter so removing it from request_dict
+    if 'page' in request_dict:
+        request_dict.pop('page')
+    context['query_string'] = urlencode(request_dict)
     return context
 
 def results_count(qs, field, sort_param):
+    # Return edits count for a particular field (for eg. users) sorted by sort_param (for eg. edits)
     return qs.values(field).annotate(edits = Count('rc_id')).order_by(sort_param)
