@@ -39,7 +39,7 @@
     <div class="center">
         <div class="pagination">
             {% if page_obj.has_previous %}
-                <a href="?{% url_replace page=page_obj.previous_page_number %}">&laquo;</a>
+                <a href="?{% url_replace page=page_obj.previous_page_number %}">Previous</a>
             {% endif %}
             {% for i in paginator.page_range %}
                 {% if page_obj.number == i %}
@@ -49,7 +49,7 @@
                 {% endif %}
             {% endfor %}
             {% if page_obj.has_next %}
-                <a href="?{% url_replace page=page_obj.next_page_number %}">&raquo;</a>
+                <a href="?{% url_replace page=page_obj.next_page_number %}">Next</a>
             {% endif %}
         </div>
     </div>
