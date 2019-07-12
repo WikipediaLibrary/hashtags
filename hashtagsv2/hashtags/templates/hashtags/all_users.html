@@ -36,21 +36,21 @@
             {% endfor %}
         </tbody>
     </table>
-    <div class="row results">
-        <div class="offset-by-three two columns">
-          {% if page_obj.has_previous %}
-            <a href="?{% url_replace page=page_obj.previous_page_number %}" class="button">Previous</a>
-          {% else %}
-          &nbsp;
-          {% endif %}
-        </div>
-        <div class="two columns">
-          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-        </div>
-        <div class="two columns">
-          {% if page_obj.has_next %}
-            <a href="?{% url_replace page=page_obj.next_page_number %}" class="button">Next</a>
-          {% endif %}
+    <div class="center">
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?{% url_replace page=page_obj.previous_page_number %}">Previous</a>
+            {% endif %}
+            {% for i in paginator.page_range %}
+                {% if page_obj.number == i %}
+                    <a href="?{% url_replace page=i %}" class="active">{{ i }}</a>
+                {% else %}
+                    <a href="?{% url_replace page=i %}">{{ i }}</a>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <a href="?{% url_replace page=page_obj.next_page_number %}">Next</a>
+            {% endif %}
         </div>
     </div>
     <div class="row">
