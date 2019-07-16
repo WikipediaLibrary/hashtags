@@ -4,6 +4,8 @@ services:
    build: .
    networks:
      - main
+   env_file:
+     - '.env'
    depends_on:
      db:
        condition: service_healthy
@@ -13,9 +15,8 @@ services:
      - ./:/app
  db:
    image: mysql:5.7
-   environment:
-     MYSQL_DATABASE: hashtagsv2_db
-     MYSQL_ROOT_PASSWORD: hashtag
+   env_file:
+     - '.env'
    ports:
      - "3306:3306"
    networks:
@@ -42,6 +43,8 @@ services:
     dockerfile: 'Dockerfile-scripts'
    networks:
      - main
+   env_file:
+     - '.env'
    depends_on:
      - db
 

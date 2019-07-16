@@ -67,9 +67,9 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'hashtagsv2_db',
+        'NAME': os.environ['MYSQL_DATABASE'],
         'USER': 'root',
-        'PASSWORD': 'hashtag', # Update from MYSQL_ROOT_PASSWORD in docker-compose.yml if changed
+        'PASSWORD': os.environ['MYSQL_ROOT_PASSWORD'],
         'HOST': 'db',
         'PORT': '3306',
     }
