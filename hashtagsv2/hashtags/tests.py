@@ -294,7 +294,7 @@ class HashtagSearchTest(TestCase):
 	def test_user_search(self):
 		"""
 		Test that we receive the correct object list when
-		searching with a hashtag, project and user.
+		searching with a hashtag and user.
 		"""
 		factory = RequestFactory()
 
