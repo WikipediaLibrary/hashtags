@@ -14,6 +14,9 @@ class SearchForm(forms.Form):
 		widget=forms.TextInput(attrs={'placeholder': 'en.wikisource.org',
 			'style': 'width:100%'}))
 
+	user = forms.CharField(required=False, label="User",
+		widget=forms.TextInput(attrs={'placeholder': 'Enter username'}))
+
 	startdate = forms.DateField(required=False, label="Start date:",
 		widget=DateInput())
 	enddate = forms.DateField(required=False, label="End date:",

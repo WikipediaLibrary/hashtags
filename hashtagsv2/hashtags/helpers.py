@@ -32,6 +32,11 @@ def hashtag_queryset(request_dict):
             queryset = queryset.filter(
                 domain=request_dict['project'])
 
+    if 'user' in request_dict:
+        if request_dict['user']:
+            queryset = queryset.filter(
+                username=request_dict['user'])
+
     if 'startdate' in request_dict:
         if request_dict['startdate']:
             queryset = queryset.filter(
