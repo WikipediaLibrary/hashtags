@@ -1,10 +1,11 @@
 import mysql.connector
+import os
 
 hashtag_db = mysql.connector.connect(
     host='db',
     user='root',
-    passwd='hashtag',
-    database='hashtagsv2_db'
+    passwd=os.environ['MYSQL_ROOT_PASSWORD'],
+    database=os.environ['MYSQL_DATABASE']
 )
 
 

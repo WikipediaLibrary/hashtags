@@ -6,6 +6,7 @@ before_script:
 
   # MySQL starts by default, resulting in a port conflict
   - sudo /etc/init.d/mysql stop
+  - cp template.env .env
 
 script:
   - docker-compose up -d --build
