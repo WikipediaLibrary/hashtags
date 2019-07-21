@@ -28,7 +28,7 @@ To set the tool up for local development, you will need:
 
 If you are installing Docker on Mac or Windows, Docker Compose is likely already included in your install.
 
-After installing both and cloning this repository, start it by running:
+After cloning the repository, copy `template.env` to `.env` and start the tool by running:
 
 >docker-compose up --build
 
