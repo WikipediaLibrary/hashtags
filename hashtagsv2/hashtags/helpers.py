@@ -23,10 +23,27 @@ def hashtag_queryset(request_dict):
 
     hashtag_list = split_hashtags(request_dict['query'])
 
-    queryset = Hashtag.objects.filter(
-        hashtag__in=hashtag_list
+    # If search_type is provided by the user
+    if 'search_type' in request_dict:
+        if request_dict['search_type'] == 'and':
+            rcids_for_hashtag=[]
+            #Collect rc_ids for each individual tag
+            for hashtag in hashtag_list:
+                qs=Hashtag.objects.filter(hashtag=hashtag).values_list('rc_id', flat=True).distinct()
+                rcids_for_hashtag.append(set(qs))
+            #Find common rc_ids by taking intersection of above obtained rc_ids 
+            final_rcids = rcids_for_hashtag[0].intersection(*rcids_for_hashtag)
+            queryset = Hashtag.objects.filter(rc_id__in=list(final_rcids))
+        else:
+            queryset = Hashtag.objects.filter(
+            hashtag__in=hashtag_list
             )
-
+    # If user didn't provide search_type
+    else:
+        queryset = Hashtag.objects.filter(
+        hashtag__in=hashtag_list
+        )
+    
     if 'project' in request_dict:
         if request_dict['project']:
             queryset = queryset.filter(

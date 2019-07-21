@@ -11,11 +11,8 @@
             <div class="four columns">
                 {{ form.query }}
             </div>
-            <div class="three columns">
+            <div class="four columns">
                 {{ form.project }}
-            </div>
-            <div class="two columns" style="margin-right: 4em">
-                {{ form.user }}
             </div>
             <div class="two columns">
                 <input class="u-full-width button-primary" type="submit" value="Submit">
@@ -29,6 +26,19 @@
             <div class="three columns">
                 {{ form.enddate.label }}
                 {{ form.enddate }}
+            </div>
+        </div>
+        <div class="row">
+            <button type="button" onclick="showAdvance()">More Filters</button>
+        </div>
+        <div class="row" id="adv" style="display: none">
+            <div style="margin-right: 2em" title="When searching for multiple hashtags, should the results be a subset or union?">
+                {{ form.search_type.label }}
+                {{ form.search_type }}
+            </div>
+            <div style="margin-right: 2em">
+                {{ form.user.label }}
+                {{ form.user }}
             </div>
         </div>
     </form>

@@ -1,4 +1,5 @@
 from django import forms
+TYPE_CHOICES = [('or', 'or'), ('and', 'and')]
 
 class DateInput(forms.DateInput):
 	# Creating a custom widget because default DateInput doesn't use
@@ -14,7 +15,10 @@ class SearchForm(forms.Form):
 		widget=forms.TextInput(attrs={'placeholder': 'en.wikisource.org',
 			'style': 'width:100%'}))
 
-	user = forms.CharField(required=False, label="User",
+	search_type = forms.CharField(label="Type:", required=False,
+		widget=forms.Select(choices=TYPE_CHOICES))
+
+	user = forms.CharField(required=False, label="User:",
 		widget=forms.TextInput(attrs={'placeholder': 'Enter username'}))
 
 	startdate = forms.DateField(required=False, label="Start date:",
