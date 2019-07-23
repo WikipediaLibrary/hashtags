@@ -27,6 +27,12 @@ class HashtagSearchTest(TestCase):
 			domain='ja.wikipedia.org',
 			timestamp=datetime(2017,6,1))
 
+		self.user_hashtag = HashtagFactory(
+			hashtag='hashtag5',
+			domain='en.wikipedia.org',
+			username='xyz'
+		)
+
 		self.message_patcher = patch('hashtagsv2.hashtags.views.messages.add_message')
 		self.message_patcher.start()
 
@@ -284,3 +290,49 @@ class HashtagSearchTest(TestCase):
 		response = views.Index.as_view()(request)
 
 		self.assertEqual(response.status_code, 200)
+
+	def test_user_search(self):
+		"""
+		Test that we receive the correct object list when
+		searching with a hashtag and user.
+		"""
+		factory = RequestFactory()
+
+		data = {
+			'query': 'hashtag5',
+			'user': 'xyz',
+		}
+
+		request = factory.get(self.url, data)
+		response = views.Index.as_view()(request)
+
+		object_list = response.context_data['object_list']
+
+		# We only get one result
+		self.assertEqual(len(object_list), 1)
+		# And it's the specific entry we're looking for
+		self.assertEqual(object_list[0], self.user_hashtag.get_values_list())
+
+	def test_and_or_search(self):
+		"""
+		Test that we get the correct object list when search_type
+		'and' is provided by user
+		"""
+		HashtagFactory(hashtag='hashtag_and_1', timestamp=datetime(2016,1,3), username='xyz', page_title='test', edit_summary='test_summary', rc_id=1234)
+		HashtagFactory(hashtag='hashtag_and_2', timestamp=datetime(2016,1,3), username='xyz', page_title='test', edit_summary='test_summary', rc_id=1234)
+
+		factory = RequestFactory()
+
+		data = {
+			'query': 'hashtag_and_1, hashtag_and_2',
+			'search_type': 'and'
+		}
+		request = factory.get(self.url, data)
+		response = views.Index.as_view()(request)
+
+		object_list = response.context_data['object_list']
+
+		# We get one result
+		self.assertEqual(len(object_list), 1)
+		# And it is the correct edit
+		self.assertEqual(object_list[0].rc_id, 1234)

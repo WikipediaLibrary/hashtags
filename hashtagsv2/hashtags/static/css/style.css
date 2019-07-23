@@ -178,3 +178,30 @@ form {
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
 }
+
+.tooltip {
+height: 25px;
+width: 25px;
+background-color: #bbb;
+border-radius: 50%;
+display: inline-block;
+color: white
+}
+  
+.tooltip .tooltiptext {
+visibility: hidden;
+width: 300px;
+background-color: black;
+color: white;
+text-align: center;
+border-radius: 6px;
+padding: 5px 0;
+
+/* Position the tooltip */
+position: absolute;
+z-index: 1;
+}
+
+.tooltip:hover .tooltiptext {
+visibility: visible;
+}

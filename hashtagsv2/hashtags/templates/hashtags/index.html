@@ -34,6 +34,23 @@
                 {{ form.enddate }}
               </div>
             </div>
+            <div class="row">
+              <button type="button" onclick="showAdvance()">More Filters</button>
+            </div>
+            <div class="row" id="adv" style="display: none">
+              <div style="margin-right: 2em">
+                {{ form.search_type.label }}
+                {{ form.search_type }}
+                &nbsp;
+                <div class="tooltip">&nbsp; ?
+                    <span class="tooltiptext">When searching for multiple hashtags, should the results be a subset or union?</span>
+                </div>
+              </div>
+              <div style="margin-right: 2em">
+                {{ form.user.label }}
+                {{ form.user }}
+              </div>
+            </div>
   	        <div class="row">
   	          <div class="six columns">
   	            <input class="button-primary" type="submit" value="Submit">
@@ -74,6 +91,23 @@
               {{ form.enddate.label }}
               {{ form.enddate }}
             </div>
+          </div>
+          <div class="row">
+              <button type="button" onclick="showAdvance()">More Filters</button>
+          </div>
+          <div class="row" id="adv" style="display: none">
+              <div style="margin-right: 2em">
+                  {{ form.search_type.label }}
+                  {{ form.search_type }}
+                  &nbsp;
+                  <div class="tooltip">&nbsp; ?
+                    <span class="tooltiptext">When searching for multiple hashtags, should the results be a subset or union?</span>
+                  </div>
+              </div>
+              <div style="margin-right: 2em">
+                  {{ form.user.label }}
+                  {{ form.user }}
+              </div>
           </div>
         </form>
         <div class="info">
