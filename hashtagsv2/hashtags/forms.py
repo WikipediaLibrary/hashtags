@@ -1,4 +1,5 @@
 from django import forms
+
 TYPE_CHOICES = [('or', 'or'), ('and', 'and')]
 
 class DateInput(forms.DateInput):
@@ -15,7 +16,7 @@ class SearchForm(forms.Form):
 		widget=forms.TextInput(attrs={'placeholder': 'en.wikisource.org',
 			'style': 'width:100%'}))
 
-	search_type = forms.CharField(label="Type:", required=False,
+	search_type = forms.CharField(required=False, label="Type:",
 		widget=forms.Select(choices=TYPE_CHOICES))
 
 	user = forms.CharField(required=False, label="User:",
