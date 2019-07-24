@@ -1,3 +1,16 @@
+// Hide top projects/users section when filtering on them
+url_string = window.location.href;
+var url = new URL(url_string);
+var project = url.searchParams.get("project");
+var user  = url.searchParams.get("user");
+if (project!=="" && project!==null){
+    $('#top_projects').hide();
+}
+if (user!=="" && user!==null){
+    $('#top_users').hide();
+}
+
+// Render charts 
 $.ajax({
     url: '/api/top_project_stats/?' + url_param,
     dataType: 'json',
