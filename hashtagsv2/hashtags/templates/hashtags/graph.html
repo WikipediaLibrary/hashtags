@@ -66,32 +66,36 @@
             </div>
         </div>
     </div>
-    <hr>
-    <div class="row"><h1>Top projects</h1></div>
-    <div class="row">
-        <div class="two-thirds column">
-            <div align="center" id="loader1">
-                <img type="image/gif" src="{% static 'loader.gif' %}">
+    <div id="top_projects">
+        <hr>
+        <div class="row"><h1>Top projects</h1></div>
+        <div class="row">
+            <div class="two-thirds column">
+                <div align="center" id="loader1">
+                    <img type="image/gif" src="{% static 'loader.gif' %}">
+                </div>
+                <canvas id="projectsChart" width="400" height="400"></canvas>
             </div>
-            <canvas id="projectsChart" width="400" height="400"></canvas>
-        </div>
-        <div class="one-third column">
-            <a href="/projects_csv/?{{ query_string }}"><button>Download CSV</button></a>
-            <a href="/all_projects/?{{ query_string }}"><button>View Full Stats</button></a>
+            <div class="one-third column">
+                <a href="/projects_csv/?{{ query_string }}"><button>Download CSV</button></a>
+                <a href="/all_projects/?{{ query_string }}"><button>View Full Stats</button></a>
+            </div>
         </div>
     </div>
-    <hr>
-    <div class="row"><h1>Top users</h1></div>
-    <div class="row">
-        <div class="two-thirds column">
-            <div align="center" id="loader2">
-                <img type="image/gif" src="{% static 'loader.gif' %}">
+    <div id="top_users">
+        <hr>
+        <div class="row"><h1>Top users</h1></div>
+        <div class="row">
+            <div class="two-thirds column">
+                <div align="center" id="loader2">
+                    <img type="image/gif" src="{% static 'loader.gif' %}">
+                </div>
+                <canvas id="usersChart" width="400" height="400"></canvas>
             </div>
-            <canvas id="usersChart" width="400" height="400"></canvas>
-        </div>
-        <div class="one-third column">
-            <a href="/users_csv/?{{ query_string }}"><button>Download CSV</button></a>
-            <a href="/all_users/?{{ query_string }}"><button>View Full Stats</button></a>    
+            <div class="one-third column">
+                <a href="/users_csv/?{{ query_string }}"><button>Download CSV</button></a>
+                <a href="/all_users/?{{ query_string }}"><button>View Full Stats</button></a>    
+            </div>
         </div>
     </div>
     <hr>
