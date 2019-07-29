@@ -1,4 +1,5 @@
 import csv
+import math
 from datetime import datetime, timedelta, timezone
 from dateutil.relativedelta import relativedelta
 
@@ -150,6 +151,16 @@ class All_users_view(ListView):
         hashtags = hashtag_queryset(request_dict)
         users_qs = results_count(hashtags, 'username', 'username')
         return users_qs
+
+    def get_paginate_by(self, queryset):
+        request_dict = self.request.GET.dict()
+        hashtags = hashtag_queryset(request_dict)
+        users_count = hashtags.values('username').distinct().count()
+        # Paginate such that there are atmost 10 pages
+        if users_count > 300:
+            return math.ceil(users_count/10)
+        else:
+            return 30
 
 class All_projects_view(ListView):
     template_name = 'hashtags/all_projects.html'
