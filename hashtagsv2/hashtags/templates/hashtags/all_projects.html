@@ -1,11 +1,12 @@
 {% extends "hashtags/base.html" %}
 {% load static %}
 {% load url_replace %}
+{% load i18n %}
 
 {% block content %}
 <div class="container">
     <div class="info">
-        <a href="/?{% url_replace page=1 %}">Back to search results</a>
+        <a href="/?{{ query_string }}">{% trans "Back to search results" %}</a>
         <div class="row">
             <div class="two-thirds column">
             <h2>
@@ -23,8 +24,8 @@
     <table class="u-full-width tablesorter">
         <thead>
             <tr>
-                <th>Project</th>
-                <th>Edits</th>
+                <th>{% trans "Project" %}</th>
+                <th>{% trans "Edits" %}</th>
             </tr>
         </thead>
         <tbody>
@@ -37,7 +38,7 @@
         </tbody>
     </table>
     <div class="row">
-        <a href="/projects_csv/?{{ query_string }}"><button>Download CSV</button></a>
+        <a href="/projects_csv/?{{ query_string }}"><button>{% trans "Download CSV" %}</button></a>
     </div>
 </div>
 {% endblock content %}

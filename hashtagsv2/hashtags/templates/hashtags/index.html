@@ -1,6 +1,7 @@
 {% extends "hashtags/base.html" %}
 {% load static %}
 {% load url_replace %}
+{% load i18n %}
 
 {% block content %}
   <div class="container">
@@ -35,7 +36,7 @@
               </div>
             </div>
             <div class="row">
-              <button type="button" onclick="showAdvance()">More Filters</button>
+              <button type="button" onclick="showAdvance()">{% trans "More Filters" %}</button>
             </div>
             <div class="row" id="adv" style="display: none">
               <div style="margin-right: 2em">
@@ -43,7 +44,7 @@
                 {{ form.search_type }}
                 &nbsp;
                 <div class="tooltip">&nbsp; ?
-                    <span class="tooltiptext">When searching for multiple hashtags, should the results be a subset or union?</span>
+                    <span class="tooltiptext">{% trans "When searching for multiple hashtags, should the results be a subset or union?" %}</span>
                 </div>
               </div>
               <div style="margin-right: 2em">
@@ -53,14 +54,14 @@
             </div>
   	        <div class="row">
   	          <div class="six columns">
-  	            <input class="button-primary" type="submit" value="Submit">
+  	            <input class="button-primary" type="submit" value="{% trans 'Submit' %}">
   	          </div>
   	        </div>
   	      </form>
         </div>
         <div class="four columns">
           <div class="info">
-            <h3>Trending tags</h3>
+            <h3>{% trans "Trending tags" %}</h3>
             <ol>
               {% for tag in top_tags %}
                 <li><a href="?query={{ tag }}">{{ tag }}</a></li>
@@ -79,7 +80,7 @@
               {{ form.project }}
             </div>
             <div class="two columns">
-              <input class="u-full-width button-primary" type="submit" value="Submit">
+              <input class="u-full-width button-primary" type="submit" value="{% trans 'Submit' %}">
             </div>
           </div>
           <div class="row">
@@ -93,7 +94,7 @@
             </div>
           </div>
           <div class="row">
-              <button type="button" onclick="showAdvance()">More Filters</button>
+              <button type="button" onclick="showAdvance()">{% trans "More Filters" %}</button>
           </div>
           <div class="row" id="adv" style="display: none">
               <div style="margin-right: 2em">
@@ -101,7 +102,7 @@
                   {{ form.search_type }}
                   &nbsp;
                   <div class="tooltip">&nbsp; ?
-                    <span class="tooltiptext">When searching for multiple hashtags, should the results be a subset or union?</span>
+                    <span class="tooltiptext">{% trans "When searching for multiple hashtags, should the results be a subset or union?" %}</span>
                   </div>
               </div>
               <div style="margin-right: 2em">
@@ -118,8 +119,8 @@
                   #{{ query }}
                 {% endfor %}
               </h2>
-                <a href="graph/?{{ query_string }}"><button>Show statistics</button></a><br>
-                <a href="csv/?{{ query_string }}"><button>Download CSV</button></a>
+                <a href="graph/?{{ query_string }}"><button>{% trans "Show statistics" %}</button></a><br>
+                <a href="csv/?{{ query_string }}"><button>{% trans "Download CSV" %}</button></a>
             </div>
             <div class="one-third column">
               {% include "hashtags/stats_table.html" %}
@@ -129,9 +130,9 @@
         <table class="u-full-width tablesorter" id="rc-table">
           <thead>
             <tr>
-              <th>Page</th>
-              <th>User</th>
-              <th>Date</th>
+              <th>{% trans "Page" %}</th>
+              <th>{% trans "User" %}</th>
+              <th>{% trans "Date" %}</th>
             </tr>
           </thead>
           <tbody>
@@ -161,17 +162,17 @@
         <div class="row results">
           <div class="offset-by-three two columns">
             {% if page_obj.has_previous %}
-              <a href="?{% url_replace page=page_obj.previous_page_number %}" class="button">Previous</a>
+              <a href="?{% url_replace page=page_obj.previous_page_number %}" class="button">{% trans "Previous" %}</a>
             {% else %}
             &nbsp;
             {% endif %}
           </div>
           <div class="two columns">
-            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            {% blocktrans with number=page_obj.number num_pages=page_obj.paginator.num_pages %}Page {{ number }} of {{ num_pages }} {% endblocktrans %}
           </div>
           <div class="two columns">
             {% if page_obj.has_next %}
-              <a href="?{% url_replace page=page_obj.next_page_number %}" class="button">Next</a>
+              <a href="?{% url_replace page=page_obj.next_page_number %}" class="button">{% trans "Next" %}</a>
             {% endif %}
           </div>
         </div>
