@@ -168,7 +168,7 @@
             {% endif %}
           </div>
           <div class="two columns">
-            {% trans "Page" %} {{ page_obj.number }} {%trans "of" %} {{ page_obj.paginator.num_pages }}
+            {% blocktrans with number=page_obj.number num_pages=page_obj.paginator.num_pages %}Page {{ number }} of {{ num_pages }} {% endblocktrans %}
           </div>
           <div class="two columns">
             {% if page_obj.has_next %}
