@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Count
 from django.views.generic import FormView, ListView, TemplateView, View
+from django.utils.translation import gettext as _
 
 from .forms import SearchForm
 from .helpers import split_hashtags, hashtag_queryset, get_hashtags_context
@@ -26,7 +27,7 @@ class Index(ListView):
             diff = datetime.now(timezone.utc) - latest_datetime
             if diff.seconds > 3600:
                 messages.add_message(self.request, messages.INFO,
-                'Note that the latest edits may not currently be reflected in the tool.')
+                _('Note that the latest edits may not currently be reflected in the tool.'))
 
         context = super().get_context_data(**kwargs)
 
@@ -54,13 +55,13 @@ class Index(ListView):
             if 'wikidata.org' in form_data['project']:
                 hashtag_qs = []
                 messages.add_message(self.request, messages.INFO,
-                    'Unfortunately Wikidata searching is not currently supported.')
+                _('Unfortunately Wikidata searching is not currently supported.'))
             else:    
                 hashtag_qs = hashtag_queryset(form_data)
 
                 if not hashtag_qs:
                     messages.add_message(self.request, messages.INFO,
-                        'No results found.')                     
+                    _('No results found.'))                     
 
             return hashtag_qs
 
@@ -81,8 +82,8 @@ def csv_download(request):
     hashtags = hashtag_queryset(request_dict)
 
     writer = csv.writer(response)
-    writer.writerow(['Domain', 'Timestamp', 'Username',
-        'Page_title', 'Edit_summary', 'Revision_id'])
+    writer.writerow([_('Domain'), _('Timestamp'), _('Username'),
+        _('Page_title'), _('Edit_summary'), _('Revision_id')])
     for hashtag in hashtags:
         writer.writerow([hashtag.domain, hashtag.timestamp.strftime("%Y-%m-%d %H:%M:%S"), hashtag.username,
             hashtag.page_title, hashtag.edit_summary, hashtag.rev_id])
