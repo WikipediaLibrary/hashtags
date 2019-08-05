@@ -2,6 +2,7 @@ import csv
 import math
 from datetime import datetime, timedelta, timezone
 from dateutil.relativedelta import relativedelta
+from django.utils.translation import gettext as _
 
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
@@ -188,7 +189,7 @@ def users_csv(request):
     hashtags = hashtag_queryset(request_dict)
     users_qs = results_count(hashtags, 'username', 'username')
     writer = csv.writer(response)
-    writer.writerow(['User', 'Edits'])
+    writer.writerow([_('User'), _('Edits')])
     for user in users_qs:
         writer.writerow([user['username'], user['edits']])
     return response
@@ -201,7 +202,7 @@ def projects_csv(request):
     hashtags = hashtag_queryset(request_dict)
     projects_qs = results_count(hashtags, 'domain', '-edits')
     writer = csv.writer(response)
-    writer.writerow(['Project','Edits'])
+    writer.writerow([_('Project'), _('Edits')])
     for project in projects_qs:
         writer.writerow([project['domain'], project['edits']])
     return response
@@ -220,7 +221,7 @@ def time_csv(request):
     for item in qs:
         time_dic[item['day'].date()] = item['edits']
     writer = csv.writer(response)
-    writer.writerow(['Date','Edits'])
+    writer.writerow([_('Date'), _('Edits')])
     while earliest_date <= latest_date:
         if earliest_date in time_dic:
             temp = time_dic.pop(earliest_date)
