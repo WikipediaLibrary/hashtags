@@ -1,10 +1,11 @@
 from datetime import datetime
 from datetime import timedelta
+from urllib.parse import urlencode
+
+from django.db.models import Count
 
 from .models import Hashtag
 
-from django.db.models import Count
-from urllib.parse import urlencode
 
 def split_hashtags(hashtag_list):
     split_hashtags_list = hashtag_list.split(",")
@@ -90,16 +91,17 @@ def hashtag_queryset(request_dict):
 def get_hashtags_context(request, hashtags, context):
     # Context data for StatisticsView and Index view
     
-    hashtag_query = request.GET.get('query')
+    hashtag_query = request.GET.get('q')
     context['hashtag_query_list'] = split_hashtags(hashtag_query)
 
     # Context for the stats section
     context['revisions'] = len(hashtags)
     context['oldest'] = hashtags[len(hashtags)-1].timestamp.date()
     context['newest'] = hashtags.first().timestamp.date()
-    context['pages'] = hashtags.values('page_title', 'domain').distinct().count()
-    context['users'] = hashtags.values('username').distinct().count()
-    context['projects'] = hashtags.values('domain').distinct().count()
+    # TODO: Reinstate - haystack queryset doesn't understand .values().distinct()
+    #context['pages'] = hashtags.values('page_title', 'domain').distinct().count()
+    #context['users'] = hashtags.values('username').distinct().count()
+    #context['projects'] = hashtags.values('domain').distinct().count()
 
     request_dict = request.GET.dict()
 

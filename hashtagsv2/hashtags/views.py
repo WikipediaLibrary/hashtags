@@ -6,17 +6,18 @@ from django.http import HttpResponse, JsonResponse
 from django.db.models import Count
 from django.views.generic import FormView, ListView, TemplateView, View
 from django.utils.translation import gettext as _
+from haystack.generic_views import SearchView
 
 from .forms import SearchForm
 from .helpers import split_hashtags, hashtag_queryset, get_hashtags_context
+from .forms import HashtagSearchForm
+from .helpers import split_hashtags
 from .models import Hashtag
 
-class Index(ListView):
+class Index(SearchView):
     model = Hashtag
     template_name = 'hashtags/index.html'
-    form_class = SearchForm
-    context_object_name = 'hashtags'
-    paginate_by = 20
+    form_class = HashtagSearchForm
 
     def get_context_data(self, *args, **kwargs):
         # If we have any hashtags in the database, check if we appear
@@ -35,7 +36,7 @@ class Index(ListView):
         # already submitted something.
         context['form'] = self.form_class(self.request.GET)
 
-        hashtags = self.object_list
+        hashtags = self.get_queryset()
         if hashtags:
             context = get_hashtags_context(self.request, hashtags, context)
         else:
@@ -56,12 +57,12 @@ class Index(ListView):
                 hashtag_qs = []
                 messages.add_message(self.request, messages.INFO,
                 _('Unfortunately Wikidata searching is not currently supported.'))
-            else:    
+            else:
                 hashtag_qs = hashtag_queryset(form_data)
 
                 if not hashtag_qs:
                     messages.add_message(self.request, messages.INFO,
-                    _('No results found.'))                     
+                    _('No results found.'))
 
             return hashtag_qs
 
