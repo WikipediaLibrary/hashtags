@@ -27,6 +27,7 @@ class Index(ListView):
             diff = datetime.now(timezone.utc) - latest_datetime
             if diff.seconds > 3600:
                 messages.add_message(self.request, messages.INFO,
+                # Translators: Message to be displayed when the latest edits are not in the database. 
                 _('Note that the latest edits may not currently be reflected in the tool.'))
 
         context = super().get_context_data(**kwargs)
@@ -55,12 +56,14 @@ class Index(ListView):
             if 'wikidata.org' in form_data['project']:
                 hashtag_qs = []
                 messages.add_message(self.request, messages.INFO,
+                # Translators: Message to be displayed when a user specify 'wikidata' in the project field.
                 _('Unfortunately Wikidata searching is not currently supported.'))
             else:    
                 hashtag_qs = hashtag_queryset(form_data)
 
                 if not hashtag_qs:
                     messages.add_message(self.request, messages.INFO,
+                    # Translators: Message to be displayed when there are no results for the search.
                     _('No results found.'))                     
 
             return hashtag_qs
