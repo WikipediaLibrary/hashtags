@@ -189,7 +189,11 @@ def users_csv(request):
     hashtags = hashtag_queryset(request_dict)
     users_qs = results_count(hashtags, 'username', 'username')
     writer = csv.writer(response)
-    writer.writerow([_('User'), _('Edits')])
+    writer.writerow([
+        # Translators: User of the hashtag
+        _('User'),
+        # Translators: Edits done on wikimedia projects.
+        _('Edits')])
     for user in users_qs:
         writer.writerow([user['username'], user['edits']])
     return response
@@ -202,7 +206,11 @@ def projects_csv(request):
     hashtags = hashtag_queryset(request_dict)
     projects_qs = results_count(hashtags, 'domain', '-edits')
     writer = csv.writer(response)
-    writer.writerow([_('Project'), _('Edits')])
+    writer.writerow([
+        # Translators: Wikimedia projects
+        _('Project'),
+        # Translators: Edits done on wikimedia projects.
+        _('Edits')])
     for project in projects_qs:
         writer.writerow([project['domain'], project['edits']])
     return response
@@ -221,7 +229,11 @@ def time_csv(request):
     for item in qs:
         time_dic[item['day'].date()] = item['edits']
     writer = csv.writer(response)
-    writer.writerow([_('Date'), _('Edits')])
+    writer.writerow([
+        # Translators: Date on which edit is made.
+        _('Date'),
+        # Translators: Edits done on wikimedia projects.
+        _('Edits')])
     while earliest_date <= latest_date:
         if earliest_date in time_dic:
             temp = time_dic.pop(earliest_date)

@@ -85,8 +85,17 @@ def csv_download(request):
     hashtags = hashtag_queryset(request_dict)
 
     writer = csv.writer(response)
-    writer.writerow([_('Domain'), _('Timestamp'), _('Username'),
-        _('Page_title'), _('Edit_summary'), _('Revision_id')])
+    writer.writerow([
+        # Translators: Domain of a wikimedia project.
+        _('Domain'),
+        # Translators: Time at which edit is done.
+        _('Timestamp'),
+        # Translators: Name of the editor.
+        _('Username'),
+        # Translations: Title of the page to which edit belongs.
+        _('Page_title'),
+        # Translations: Summary of the edit done on Wikimedia project.
+        _('Edit_summary'), _('Revision_id')])
     for hashtag in hashtags:
         writer.writerow([hashtag.domain, hashtag.timestamp.strftime("%Y-%m-%d %H:%M:%S"), hashtag.username,
             hashtag.page_title, hashtag.edit_summary, hashtag.rev_id])

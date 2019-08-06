@@ -14,7 +14,9 @@ class SearchForm(forms.Form):
 		widget=forms.TextInput(attrs={'placeholder': _('Enter a hashtag'),
 			'style': 'width:100%'}))
 
-	project = forms.CharField(required=False,label= _("Project"),
+	project = forms.CharField(required=False,
+		# Translators: Label for the section of form where we ask user to specify a project.
+		label= _("Project"),
 		widget=forms.TextInput(attrs={'placeholder': 'en.wikisource.org',
 			'style': 'width:100%'}))
 
