@@ -95,7 +95,9 @@ def csv_download(request):
         # Translations: Title of the page to which edit belongs.
         _('Page_title'),
         # Translations: Summary of the edit done on Wikimedia project.
-        _('Edit_summary'), _('Revision_id')])
+        _('Edit_summary'),
+        # Translations: Revision ID of the edit.
+        _('Revision_id')])
     for hashtag in hashtags:
         writer.writerow([hashtag.domain, hashtag.timestamp.strftime("%Y-%m-%d %H:%M:%S"), hashtag.username,
             hashtag.page_title, hashtag.edit_summary, hashtag.rev_id])
