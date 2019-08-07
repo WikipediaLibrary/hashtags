@@ -90,7 +90,7 @@ def csv_download(request):
         _('Domain'),
         # Translators: Time at which edit is done.
         _('Timestamp'),
-        # Translators: Name of the editor.
+        # Translators: Username of the editor.
         _('Username'),
         # Translations: Title of the page to which edit belongs.
         _('Page_title'),
