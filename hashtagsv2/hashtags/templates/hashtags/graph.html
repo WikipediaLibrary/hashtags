@@ -30,7 +30,10 @@
             </div>
         </div>
         <div class="row">
-            <button type="button" onclick="showAdvance()">{% trans "More Filters" %}</button>
+            <button type="button" onclick="showAdvance()">
+                {% comment %} Translators: This labels a button which display more filters for search.  {% endcomment %}
+                {% trans "More Filters" %}
+            </button>
         </div>
         <div class="row" id="adv" style="display: none">
             <div style="margin-right: 2em">
@@ -38,7 +41,10 @@
                 {{ form.search_type }}
                 &nbsp;
                 <div class="tooltip">&nbsp; ?
-                    <span class="tooltiptext">{% trans "When searching for multiple hashtags, should the results be a subset or union?" %}</span>
+                    <span class="tooltiptext">
+                        {% comment %} Translators: Text to be displayed when user hovers on a question mark beside type field. When searching for multiple hashtags, 'Subset' means that we show results containing *any* of those listed, and 'Union' means we show results containing *all* of them. {% endcomment %}
+                        {% trans "When searching for multiple hashtags, should the results be a subset or union?" %}
+                    </span>
                 </div>
             </div>
             <div style="margin-right: 2em">
@@ -60,7 +66,11 @@
                     {% endfor %}
                 </h2>
                 <h2>Statistics</h2>
-                <a href="/?{{ query_string }}"><button>{% trans "Show list" %}</button></a>
+                <a href="/?{{ query_string }}">
+                    <button>
+                        {% comment %} Translators: This labels a button to display a list of results. {% endcomment %}
+                        {% trans "Show list" %}
+                    </button></a>
             </div>
             <div class="one-third column">
                 {% include "hashtags/stats_table.html" %}
@@ -69,7 +79,12 @@
     </div>
     <div id="top_projects">
         <hr>
-        <div class="row"><h1>{% trans "Top projects" %}</h1></div>
+        <div class="row">
+            <h1>
+                {% comment %} Translators: This is the title of the section which displays a graph of top ten projects. {% endcomment %}
+                {% trans "Top projects" %}
+            </h1>
+        </div>
         <div class="row">
             <div class="two-thirds column">
                 <div align="center" id="loader1">
@@ -78,14 +93,29 @@
                 <canvas id="projectsChart" width="400" height="400"></canvas>
             </div>
             <div class="one-third column">
-                <a href="/projects_csv/?{{ query_string }}"><button>{% trans "Download CSV" %}</button></a>
-                <a href="/all_projects/?{{ query_string }}"><button>{% trans "View Full Stats" %}</button></a>
+                <a href="/projects_csv/?{{ query_string }}">
+                    <button>
+                        {% comment %} Translators: This labels a button to download the data in CSV format. {% endcomment %}
+                        {% trans "Download CSV" %}
+                    </button>
+                </a>
+                <a href="/all_projects/?{{ query_string }}">
+                    <button>
+                        {% comment %} Translators: This labels a button which takes users to full statistics page. {% endcomment %}
+                        {% trans "View Full Stats" %}
+                    </button>
+                </a>
             </div>
         </div>
     </div>
     <div id="top_users">
         <hr>
-        <div class="row"><h1>{% trans "Top users" %}</h1></div>
+        <div class="row">
+            <h1>
+                {% comment %} Translators: This is the title of the section which displays a graph of top ten users. {% endcomment %}
+                {% trans "Top users" %}
+            </h1>
+        </div>
         <div class="row">
             <div class="two-thirds column">
                 <div align="center" id="loader2">
@@ -94,13 +124,28 @@
                 <canvas id="usersChart" width="400" height="400"></canvas>
             </div>
             <div class="one-third column">
-                <a href="/users_csv/?{{ query_string }}"><button>{% trans "Download CSV" %}</button></a>
-                <a href="/all_users/?{{ query_string }}"><button>{% trans "View Full Stats" %}</button></a>    
+                <a href="/users_csv/?{{ query_string }}">
+                    <button>
+                        {% comment %} Translators: This labels a button to download the data in CSV format. {% endcomment %}
+                        {% trans "Download CSV" %}
+                    </button>
+                </a>
+                <a href="/all_users/?{{ query_string }}">
+                    <button>
+                        {% comment %} Translators: This labels a button which takes users to full statistics page. {% endcomment %}
+                        {% trans "View Full Stats" %}
+                    </button>
+                </a>    
             </div>
         </div>
     </div>
     <hr>
-    <div class="row"><h1>{% trans "Edits over time" %}</h1></div>
+    <div class="row">
+        <h1>
+            {% comment %} Translators: This is the title of the section which displays a graph of edits with respect to time. {% endcomment %}
+            {% trans "Edits over time" %}
+        </h1>
+    </div>
     <div class="row">
         <div align="center" id="loader3">
             <img type="image/gif" src="{% static 'loader.gif' %}">
@@ -109,7 +154,12 @@
             <canvas id="timeChart" width="400" height="400"></canvas>
         </div>
         <div class="row">
-            <a href="/time_csv/?{{ query_string }}"><button>{% trans "Download CSV" %}</button></a>
+            <a href="/time_csv/?{{ query_string }}">
+                <button>
+                    {% comment %} Translators: This labels a button to download the data in CSV format. {% endcomment %}
+                    {% trans "Download CSV" %}
+                </button>
+            </a>
         </div>
     </div>
     <hr>

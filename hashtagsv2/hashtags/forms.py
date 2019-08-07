@@ -10,20 +10,32 @@ class DateInput(forms.DateInput):
 
 class SearchForm(forms.Form):
 	query = forms.CharField(label=_("Hashtag"),
+		# Translators: Placeholder for the section of form where we ask user to specify a hashtag.
 		widget=forms.TextInput(attrs={'placeholder': _('Enter a hashtag'),
 			'style': 'width:100%'}))
 
-	project = forms.CharField(required=False,label= _("Project"),
+	project = forms.CharField(required=False,
+		# Translators: Label for the section of form where we ask user to specify a project.
+		label= _("Project"),
 		widget=forms.TextInput(attrs={'placeholder': 'en.wikisource.org',
 			'style': 'width:100%'}))
 
-	search_type = forms.CharField(required=False, label= _("Type:"),
+	search_type = forms.CharField(required=False,
+		# Translators: Label for the section of form where we ask user to specify the type of search.
+		label= _("Type:"),
 		widget=forms.Select(choices=TYPE_CHOICES))
 
-	user = forms.CharField(required=False, label= _("User:"),
+	user = forms.CharField(required=False,
+		# Translators: Label for the section of form where we ask user to enter a username.
+		label= _("User:"),
+		# Translators: Placeholder for the section of the form where we ask user to enter a username.
 		widget=forms.TextInput(attrs={'placeholder': _('Enter username')}))
 
-	startdate = forms.DateField(required=False, label= _("Start date:"),
+	startdate = forms.DateField(required=False,
+		# Translators: Label for the section of form where we ask user to specify a initial date for search results.
+		label= _("Start date:"),
 		widget=DateInput())
-	enddate = forms.DateField(required=False, label= _("End date:"),
+	enddate = forms.DateField(required=False,
+		# Translators: Label for the section of form where we ask user to specify the last date for search results. 
+		label= _("End date:"),
 		widget=DateInput())

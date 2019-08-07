@@ -36,7 +36,10 @@
               </div>
             </div>
             <div class="row">
-              <button type="button" onclick="showAdvance()">{% trans "More Filters" %}</button>
+              <button type="button" onclick="showAdvance()">
+                {% comment %} Translators: This labels a button which display more filters for search.  {% endcomment %}
+                {% trans "More Filters" %}
+              </button>
             </div>
             <div class="row" id="adv" style="display: none">
               <div style="margin-right: 2em">
@@ -44,7 +47,10 @@
                 {{ form.search_type }}
                 &nbsp;
                 <div class="tooltip">&nbsp; ?
-                    <span class="tooltiptext">{% trans "When searching for multiple hashtags, should the results be a subset or union?" %}</span>
+                    <span class="tooltiptext">
+                      {% comment %} Translators: Text to be displayed when user hovers on a question mark beside type field. When searching for multiple hashtags, 'Subset' means that we show results containing *any* of those listed, and 'Union' means we show results containing *all* of them. {% endcomment %}
+                      {% trans "When searching for multiple hashtags, should the results be a subset or union?" %}
+                    </span>
                 </div>
               </div>
               <div style="margin-right: 2em">
@@ -61,7 +67,10 @@
         </div>
         <div class="four columns">
           <div class="info">
-            <h3>{% trans "Trending tags" %}</h3>
+            <h3>
+              {% comment %} Translators: This is the title of the section which displays mostly used tags. {% endcomment %}
+              {% trans "Trending tags" %}
+            </h3>
             <ol>
               {% for tag in top_tags %}
                 <li><a href="?query={{ tag }}">{{ tag }}</a></li>
@@ -94,7 +103,10 @@
             </div>
           </div>
           <div class="row">
-              <button type="button" onclick="showAdvance()">{% trans "More Filters" %}</button>
+              <button type="button" onclick="showAdvance()">
+                {% comment %} Translators: This labels a button which display more filters for search.  {% endcomment %}
+                {% trans "More Filters" %}
+              </button>
           </div>
           <div class="row" id="adv" style="display: none">
               <div style="margin-right: 2em">
@@ -102,7 +114,10 @@
                   {{ form.search_type }}
                   &nbsp;
                   <div class="tooltip">&nbsp; ?
-                    <span class="tooltiptext">{% trans "When searching for multiple hashtags, should the results be a subset or union?" %}</span>
+                    <span class="tooltiptext">
+                      {% comment %} Translators: Text to be displayed when user hovers on a question mark beside type field. When searching for multiple hashtags, 'Subset' means that we show results containing *any* of those listed, and 'Union' means we show results containing *all* of them. {% endcomment %}
+                      {% trans "When searching for multiple hashtags, should the results be a subset or union?" %}
+                    </span>
                   </div>
               </div>
               <div style="margin-right: 2em">
@@ -119,8 +134,18 @@
                   #{{ query }}
                 {% endfor %}
               </h2>
-                <a href="graph/?{{ query_string }}"><button>{% trans "Show statistics" %}</button></a><br>
-                <a href="csv/?{{ query_string }}"><button>{% trans "Download CSV" %}</button></a>
+                <a href="graph/?{{ query_string }}">
+                  <button>
+                    {% comment %} Translators: This labels a button that takes user to statistics page. {% endcomment %}
+                    {% trans "Show statistics" %}
+                  </button>
+                </a><br>
+                <a href="csv/?{{ query_string }}">
+                  <button>
+                    {% comment %} Translators: This labels a button to download the data in CSV format. {% endcomment %}
+                    {% trans "Download CSV" %}
+                  </button>
+                </a>
             </div>
             <div class="one-third column">
               {% include "hashtags/stats_table.html" %}

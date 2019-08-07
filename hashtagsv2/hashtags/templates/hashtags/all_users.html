@@ -6,7 +6,10 @@
 {% block content %}
 <div class="container">
     <div class="info">
-        <a href="/?{{ query_string }}">{% trans "Back to search results" %}</a>
+        <a href="/?{{ query_string }}">
+            {% comment %} Translators: This is the label for a link which goes back to the full search results. {% endcomment %}
+            {% trans "Back to search results" %}
+        </a>
         <div class="row">
             <div class="two-thirds column">
             <h2>
@@ -24,8 +27,13 @@
     <table class="u-full-width tablesorter">
         <thead>
             <tr>
-                <th>{% trans "User" %}</th>
-                <th>{% trans "Edits" %}</th>
+                <th>
+                    {% comment %} Translators: User of the hashtag. {% endcomment %}
+                </th>
+                <th>
+                    {% comment %} Translators: Edits done on wikimedia projects. {% endcomment %}
+                    {% trans "Edits" %}
+                </th>
             </tr>
         </thead>
         <tbody>
@@ -55,7 +63,12 @@
         </div>
     </div>
     <div class="row">
-        <a href="/users_csv/?{{ query_string }}"><button>{% trans "Download CSV" %}</button></a>
+        <a href="/users_csv/?{{ query_string }}">
+            <button>
+                {% comment %} Translators: This labels a button to download the data in CSV format. {% endcomment %}
+                {% trans "Download CSV" %}
+            </button>
+        </a>
     </div>
 </div>
 {% endblock content %}
