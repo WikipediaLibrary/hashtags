@@ -7,6 +7,7 @@ from django.test import TestCase, RequestFactory
 
 from .factories import HashtagFactory
 from .models import Hashtag
+from .helpers import split_hashtags
 from . import views
 
 
@@ -45,6 +46,24 @@ class HashtagSearchTest(TestCase):
 	def tearDown(self):
 		super(HashtagSearchTest, self).tearDown()
 		self.message_patcher.stop()
+
+	def test_split_hashtags1(self):
+		"""
+		Test split_hashtags method gives correct results
+		"""
+		input_string = "hashtag1, hashtag2"
+		expected_list = ['hashtag1', 'hashtag2']
+		ans_list = split_hashtags(input_string)
+		self.assertEqual(expected_list, ans_list)
+
+	def test_split_hashtags2(self):
+		"""
+		Test split_hashtags method gives correct result when input list contains octothorpe.
+		"""
+		input_string = "#hashtag1, #hashtag2"
+		expected_list = ['hashtag1', 'hashtag2']
+		ans_list = split_hashtags(input_string)
+		self.assertEqual(expected_list, ans_list)
 
 	def test_hashtags_search(self):
 		"""
