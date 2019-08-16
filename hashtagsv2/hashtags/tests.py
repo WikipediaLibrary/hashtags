@@ -49,7 +49,7 @@ class HashtagSearchTest(TestCase):
 
 	def test_split_hashtags1(self):
 		"""
-		Test split_hashtags method gives correct results
+		Test that split_hashtags method gives correct results
 		"""
 		input_string = "hashtag1, hashtag2"
 		expected_list = ['hashtag1', 'hashtag2']
@@ -58,7 +58,7 @@ class HashtagSearchTest(TestCase):
 
 	def test_split_hashtags2(self):
 		"""
-		Test split_hashtags method gives correct result when input list contains octothorpe.
+		Test that split_hashtags method gives correct results when hashtags contains octothorpe.
 		"""
 		input_string = "#hashtag1, #hashtag2"
 		expected_list = ['hashtag1', 'hashtag2']
