@@ -123,7 +123,7 @@ def time_statistics_data(request):
     return JsonResponse(data)
 
 class StatisticsView(View):
-    template_name = 'hashtags/graph.html'
+    template_name = 'graphs/graph.html'
     form_class = SearchForm
     def get(self, request):
         request_dict = request.GET.dict()
@@ -135,7 +135,7 @@ class StatisticsView(View):
         return render(request, self.template_name, context=context)
 
 class All_users_view(ListView):
-    template_name = 'hashtags/all_users.html'
+    template_name = 'graphs/all_users.html'
     context_object_name = 'users_list'
     paginate_by = 30
 
@@ -164,7 +164,7 @@ class All_users_view(ListView):
             return 30
 
 class All_projects_view(ListView):
-    template_name = 'hashtags/all_projects.html'
+    template_name = 'graphs/all_projects.html'
     context_object_name = 'projects_list'
 
     def get_context_data(self, *args, **kwargs):
