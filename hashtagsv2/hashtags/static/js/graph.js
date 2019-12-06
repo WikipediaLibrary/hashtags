@@ -130,9 +130,9 @@ setTimeout(function() {
     let users_link = document.getElementById("usersChart").toDataURL("image/jpeg")
     let edits_link = document.getElementById("timeChart").toDataURL("image/jpeg")
     document.getElementById("projects_url").href = projects_link;
-    document.getElementById("projects_url").setAttribute('download', 'top_projects.jpeg')
+    document.getElementById("projects_url").setAttribute('download', 'top_projects.jpg')
     document.getElementById("users_url").href = users_link;
-    document.getElementById("users_url").setAttribute('download', 'top_users.jpeg')
+    document.getElementById("users_url").setAttribute('download', 'top_users.jpg')
     document.getElementById("time_url").href = edits_link;
-    document.getElementById("time_url").setAttribute('download', 'edits_over_time.jpeg')
+    document.getElementById("time_url").setAttribute('download', 'edits_over_time.jpg')
 }, 100);
