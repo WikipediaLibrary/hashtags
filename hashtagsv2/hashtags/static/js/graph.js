@@ -36,12 +36,17 @@ else{
                     },
                 }
             });
+            
+            
         },
         complete: function(){
             $('#loader1').hide();
+            
         }
-    })    
+    })
+
 }
+
 
 // Hide top users section when filtering on it 
 if (user!=="" && user!==null){
@@ -119,3 +124,15 @@ $.ajax({
         $('#loader3').hide();
     }
 })
+
+setTimeout(function() {
+    let projects_link = document.getElementById("projectsChart").toDataURL("image/jpeg");
+    let users_link = document.getElementById("usersChart").toDataURL("image/jpeg")
+    let edits_link = document.getElementById("timeChart").toDataURL("image/jpeg")
+    document.getElementById("projects_url").href = projects_link;
+    document.getElementById("projects_url").setAttribute('download', 'top_projects.jpeg')
+    document.getElementById("users_url").href = users_link;
+    document.getElementById("users_url").setAttribute('download', 'top_users.jpeg')
+    document.getElementById("time_url").href = edits_link;
+    document.getElementById("time_url").setAttribute('download', 'edits_over_time.jpeg')
+}, 100);

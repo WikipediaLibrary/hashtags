@@ -99,6 +99,13 @@
                         {% trans "Download CSV" %}
                     </button>
                 </a>
+                <a id="projects_url" class="downloadAnchor">
+                    <button>
+                        {% comment %} Translators: This labels a button to download the data in JPG format. {% endcomment %}
+                        {% trans "Download JPG" %}
+                    </button>
+                </a>
+                </a>
                 <a href="/all_projects/?{{ query_string }}">
                     <button>
                         {% comment %} Translators: This labels a button which takes users to full statistics page. {% endcomment %}
@@ -130,6 +137,12 @@
                         {% trans "Download CSV" %}
                     </button>
                 </a>
+                <a id="users_url" class="downloadAnchor">
+                    <button>
+                        {% comment %} Translators: This labels a button to download the data in CSV format. {% endcomment %}
+                        {% trans "Download JPG" %}
+                    </button>
+                </a>
                 <a href="/all_users/?{{ query_string }}">
                     <button>
                         {% comment %} Translators: This labels a button which takes users to full statistics page. {% endcomment %}
@@ -153,11 +166,17 @@
         <div>
             <canvas id="timeChart" width="400" height="400"></canvas>
         </div>
-        <div class="row">
+        <div class="row download-edits">
             <a href="/time_csv/?{{ query_string }}">
                 <button>
                     {% comment %} Translators: This labels a button to download the data in CSV format. {% endcomment %}
                     {% trans "Download CSV" %}
+                </button>
+            </a>
+            <a id="time_url" class="downloadAnchor">
+                <button>
+                    {% comment %} Translators: This labels a button to download the data in CSV format. {% endcomment %}
+                    {% trans "Download JPG" %}
                 </button>
             </a>
         </div>
@@ -165,6 +184,7 @@
     <hr>
     <script> var url_param = '{{ query_string }}'; </script>
     <script src="{% static 'js/graph.js' %}"></script>
+    <script src="{% static 'js/tests.js' %}"></script>
     {% endif %}
 </div>
 {% endblock content %}
