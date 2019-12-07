@@ -3,7 +3,6 @@ from json import loads
 
 from django.test import TestCase, RequestFactory
 
-
 from hashtagsv2.hashtags.factories import HashtagFactory
 from hashtagsv2.hashtags.models import Hashtag
 from . import views
