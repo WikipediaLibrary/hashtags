@@ -34,14 +34,28 @@ else{
                             }
                         }]
                     },
+                    // When chart is rendered, change download and href atribute of anchor 'Download JPG' to allow users to download charts as image
+                    // toDataURL function gets url of chart in type of jpeg image
+                    animation: { 
+                        onComplete: function(){ 
+                            let projects_link = document.getElementById("projectsChart").toDataURL("image/jpeg"); 
+                            document.getElementById("projects_url").href = projects_link; 
+                            document.getElementById("projects_url").setAttribute('download', 'top_projects.jpg'); 
+                        } 
+                    }
                 }
             });
+            
+            
         },
         complete: function(){
             $('#loader1').hide();
+            
         }
-    })    
+    })
+
 }
+
 
 // Hide top users section when filtering on it 
 if (user!=="" && user!==null){
@@ -75,6 +89,15 @@ else{
                             }
                         }]
                     },
+                    // When chart is rendered, change download and href atribute of anchor 'Download JPG' to allow users to download charts as image
+                    // toDataURL function gets url of chart in type of jpeg image
+                    animation: { 
+                        onComplete: function(){ 
+                            let users_link = document.getElementById("usersChart").toDataURL("image/jpeg"); 
+                            document.getElementById("users_url").href = users_link; 
+                            document.getElementById("users_url").setAttribute('download', 'top_users.jpg'); 
+                        } 
+                    }
                 }
             });
         },
@@ -111,7 +134,16 @@ $.ajax({
                         }
                     }]
                 },
-                maintainAspectRatio: false
+                maintainAspectRatio: false,
+                // When chart is rendered, change download and href atribute of anchor 'Download JPG' to allow users to download charts as image
+                // toDataURL function gets url of chart in type of jpeg image
+                animation: { 
+                    onComplete: function(){ 
+                        let time_link = document.getElementById("timeChart").toDataURL("image/jpeg"); 
+                        document.getElementById("time_url").href = time_link; 
+                        document.getElementById("time_url").setAttribute('download', 'edits_over_time.jpg'); 
+                    } 
+                }
             }
         });
     },
