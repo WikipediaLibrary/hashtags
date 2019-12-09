@@ -1,7 +1,18 @@
+// Customise chart background colour
+var backgroundColor = 'white';
+Chart.plugins.register({
+    beforeDraw: function(c) {
+        var ctx = c.chart.ctx;
+        ctx.fillStyle = backgroundColor;
+        ctx.fillRect(0, 0, c.chart.width, c.chart.height);
+    }
+});
+
 url_string = window.location.href;
 var url = new URL(url_string);
 var project = url.searchParams.get("project");
 var user  = url.searchParams.get("user");
+
 // Hide top projects section when filtering on it
 if (project!=="" && project!==null){
     $('#top_projects').hide();
