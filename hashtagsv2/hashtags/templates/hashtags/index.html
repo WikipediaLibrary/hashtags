@@ -135,13 +135,13 @@
                 {% endfor %}
               </h2>
                 <a href="graph/?{{ query_string }}">
-                  <button>
+                  <button class="result-button">
                     {% comment %} Translators: This labels a button that takes user to statistics page. {% endcomment %}
                     {% trans "Show statistics" %}
                   </button>
                 </a><br>
                 <a href="csv/?{{ query_string }}">
-                  <button>
+                  <button class="result-button">
                     {% comment %} Translators: This labels a button to download the data in CSV format. {% endcomment %}
                     {% trans "Download CSV" %}
                   </button>
