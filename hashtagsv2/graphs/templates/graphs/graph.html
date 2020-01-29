@@ -160,11 +160,31 @@
         </h1>
     </div>
     <div class="row">
+       <button name="dailyTimeChart" class="view-type" value="daily">
+            {% comment %} Translators: This labels a button to change to daily view. {% endcomment %}
+            {% trans "Daily" %}
+       </button>&emsp;
+       <button name="monthlyTimeChart" class="view-type" value="monthly">
+            {% comment %} Translators: This labels a button to change to monthly view. {% endcomment %}
+            {% trans "Monthly" %}
+        </button>&emsp;
+       <button name="yearlyTimeChart" class="view-type" value="yearly">
+            {% comment %} Translators: This labels a button to change to yearly view. {% endcomment %}
+            {% trans "Yearly" %}
+        </button>
+    </div>
+    <div class="row">
         <div align="center" id="loader3">
             <img type="image/gif" src="{% static 'loader.gif' %}">
         </div>
         <div>
-            <canvas id="timeChart" width="400" height="400"></canvas>
+            <canvas class="timeChart" id="dailyTimeChart" status="not-loaded" width="400" height="400"></canvas>
+        </div>
+        <div>
+            <canvas class="timeChart" id="monthlyTimeChart" status="not-loaded" width="400" height="400"></canvas>
+        </div>
+        <div>
+            <canvas class="timeChart" id="yearlyTimeChart" status="not-loaded" width="400" height="400"></canvas>
         </div>
         <div class="row download-edits">
             <a href="/time_csv/?{{ query_string }}">
