@@ -67,9 +67,15 @@ def time_statistics_data(request):
     date_range = latest_date - earliest_date
     # key value pairs of date unit and number of edits
     time_dic = {}
+    
+    if "view_type" in request_dict:
+        view_type = request_dict['view_type']
+    else:
+        view_type = 'NOTA'
 
     # Split by days
-    if date_range.days < 90:
+    if (date_range.days < 90 or view_type == 'daily') and view_type != 'monthly':
+        view_type = 'dailyTimeChart'
         qs = hashtags.annotate(day = TruncDay('timestamp')).values('day').annotate(edits = Count('rc_id')).order_by()
         
         for item in qs:
@@ -84,7 +90,8 @@ def time_statistics_data(request):
                 edits_array.append(0)
             earliest_date = earliest_date + timedelta(days=1)
     # Split by months
-    elif date_range.days >=90 and date_range.days <1095:
+    elif (date_range.days >=90 and date_range.days <1095 or view_type == 'monthly') and view_type != 'yearly':
+        view_type = 'monthlyTimeChart'
         qs = hashtags.annotate(month = TruncMonth('timestamp')).values('month').annotate(edits = Count('rc_id')).order_by()
         for item in qs:
             time_dic[item['month'].date()] = item['edits']
@@ -101,6 +108,7 @@ def time_statistics_data(request):
             earliest_date = earliest_date + relativedelta(months= +1)
     # Split by years
     else:
+        view_type = 'yearlyTimeChart'
         qs = hashtags.annotate(year = TruncYear('timestamp')).values('year').annotate(edits = Count('rc_id')).order_by()       
         for item in qs:
             time_dic[item['year'].date()] = item['edits']
@@ -118,7 +126,8 @@ def time_statistics_data(request):
 
     data = {
         'edits_array': edits_array,
-        'time_array': time_array
+        'time_array': time_array,
+        'view_type' : view_type
     }
     return JsonResponse(data)
 
