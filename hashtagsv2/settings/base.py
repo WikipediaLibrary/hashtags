@@ -72,7 +72,6 @@ DATABASES = {
         'PASSWORD': os.environ['MYSQL_ROOT_PASSWORD'],
         'HOST': 'db',
         'PORT': '3306',
-        'OPTIONS': {'charset': 'utf8mb4'},
     }
 }
 
