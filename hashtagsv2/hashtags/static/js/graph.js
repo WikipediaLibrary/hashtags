@@ -161,21 +161,20 @@ $(".view-type").click(function() {
 
 // shows the required chart and hides oher
 function show_chart(view_type) {
+    //for chart
     $(".timeChart").hide();
     $('#' + view_type).show();
+    // for DOWNLOAD JPG buttons
+    $(".downloadAnchor").hide();
+    $('#'+view_type+'-url').show();
 
     for (var i = 0; i < 3; i++) {
         ($(".view-type")[i]).style.borderStyle = "hidden";
     }
-
     document.getElementsByName(view_type)[0].style.borderStyle = "solid";
 
     var status = $('#' + view_type).attr("status");
-    if (status == 'loaded') {
-        let time_link = document.getElementById(view_type).toDataURL("image/jpeg");
-        document.getElementById("time_url").href = time_link;
-        document.getElementById("time_url").setAttribute('download', 'edits_over_time.jpg');
-    } else {
+    if (status != 'loaded') {
         $('#' + view_type).attr("status", "loaded");
     }
 }
@@ -217,8 +216,8 @@ function draw_chart(data) {
             animation: {
                 onComplete: function() {
                     let time_link = document.getElementById(data['view_type']).toDataURL("image/jpeg");
-                    document.getElementById("time_url").href = time_link;
-                    document.getElementById("time_url").setAttribute('download', 'edits_over_time.jpg');
+                    document.getElementById(data['view_type']+'-url').href = time_link;
+                    document.getElementById(data['view_type']+'-url').setAttribute('download', 'edits_over_time.jpg');
                 }
             }
         }
