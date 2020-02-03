@@ -1,5 +1,7 @@
 import csv
 import math
+import json
+import itertools
 from datetime import datetime, timedelta, timezone
 from dateutil.relativedelta import relativedelta
 from django.utils.translation import gettext as _
@@ -68,8 +70,6 @@ def time_statistics_data(request):
     # key value pairs of date unit and number of edits
     time_dic = {}
 
-
-
     number_of_days = date_range.days
     # if the request is to change the view_type
     if "view_type" in request_dict:
@@ -79,7 +79,7 @@ def time_statistics_data(request):
         view_type = 'NOTA'
     
     # Split by days
-    if  number_of_days < 90 or view_type == 'daily':
+    if  number_of_days < 90 or view_type == 'dailyTimeChart':
         view_type = 'dailyTimeChart'
         qs = hashtags.annotate(day = TruncDay('timestamp')).values('day').annotate(edits = Count('rc_id')).order_by()
         
@@ -95,7 +95,7 @@ def time_statistics_data(request):
                 edits_array.append(0)
             earliest_date = earliest_date + timedelta(days=1)
     # Split by months
-    elif number_of_days >=90 and number_of_days <1095 or view_type == 'monthly':
+    elif number_of_days >=90 and number_of_days <1095 or view_type == 'monthlyTimeChart':
         view_type = 'monthlyTimeChart'
         qs = hashtags.annotate(month = TruncMonth('timestamp')).values('month').annotate(edits = Count('rc_id')).order_by()
         for item in qs:
@@ -230,81 +230,22 @@ def projects_csv(request):
     return response
 
 def time_csv(request):
-    request_dict = request.GET.dict()
+    temp = time_statistics_data(request)
+    temp = temp.content
+    # converting byte str to str
+    temp = temp.decode('ASCII')
+    temp = json.loads(temp)
+
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="hashtags_dates.csv"'
-
-    hashtags = hashtag_queryset(request_dict)
-    earliest_date = hashtags[len(hashtags)-1].timestamp.date()
-    latest_date = hashtags.first().timestamp.date()
-
-    time_dic = {}
+    
     writer = csv.writer(response)
-
-    view_type = 'dailyTimeChart'
-    if 'view_type' in request_dict:
-        view_type = request_dict['view_type']
-
-    if view_type == 'dailyTimeChart':
-        qs = hashtags.annotate(day = TruncDay('timestamp')).values('day').annotate(edits = Count('rc_id')).order_by()
-        for item in qs:
-            time_dic[item['day'].date()] = item['edits']
-        
-        writer.writerow([
-            # Translators: Date on which edit is made.
-            _('Date'),
-            # Translators: Edits done on wikimedia projects.
-            _('Edits')])
-        while earliest_date <= latest_date:
-            if earliest_date in time_dic:
-                temp = time_dic.pop(earliest_date)
-                writer.writerow([earliest_date.strftime("%Y-%m-%d"), temp])
-            else:
-                writer.writerow([earliest_date.strftime("%Y-%m-%d"), 0])
-            earliest_date = earliest_date + timedelta(days=1)
-
-
-    elif view_type == 'monthlyTimeChart':
-        qs = hashtags.annotate(month = TruncMonth('timestamp')).values('month').annotate(edits = Count('rc_id')).order_by()
-        for item in qs:
-            time_dic[item['month'].date()] = item['edits']
-        
-        writer.writerow([
-            # Translators: Date on which edit is made.
-            _('Month'),
-            # Translators: Edits done on wikimedia projects.
-            _('Edits')])
-        
-        earliest_date = earliest_date.replace(day=1)
-        latest_date = latest_date.replace(day=1)
-        while earliest_date <= latest_date:
-            if earliest_date in time_dic:
-                temp = time_dic.pop(earliest_date)
-                writer.writerow([earliest_date.strftime("%b-%Y"), temp])
-            else:
-                writer.writerow([earliest_date.strftime("%b-%Y"), 0])
-            earliest_date = earliest_date + relativedelta(months= +1)
-
-    else:
-        qs = hashtags.annotate(year = TruncYear('timestamp')).values('year').annotate(edits = Count('rc_id')).order_by()       
-        for item in qs:
-            time_dic[item['year'].date()] = item['edits']
-
-        writer.writerow([
-            # Translators: Date on which edit is made.
-            _('Year'),
-            # Translators: Edits done on wikimedia projects.
-            _('Edits')])
-          
-        earliest_date = earliest_date.replace(day=1,month=1)
-        latest_date = latest_date.replace(day=1,month=1)
-        while earliest_date <= latest_date:
-            if earliest_date in time_dic:
-                temp = time_dic.pop(earliest_date)
-                writer.writerow([earliest_date.strftime("%Y"), temp])
-            else:
-                writer.writerow([earliest_date.strftime("%Y"), 0])
-            earliest_date = earliest_date + relativedelta(years= +1)
-
-
+    writer.writerow([
+        # Translators: Date on which edit is made.
+        _('Date'),
+        # Translators: Edits done on wikimedia projects.
+        _('Edits')])
+    for i,j in zip(temp['time_array'],temp['edits_array']):
+        writer.writerow([i,j])
+    
     return response
