@@ -160,18 +160,9 @@
         </h1>
     </div>
     <div class="row">
-       <button name="dailyTimeChart" class="view-type" value="daily">
-            {% comment %} Translators: This labels a button to change to daily view. {% endcomment %}
-            {% trans "Daily" %}
-       </button>&emsp;
-       <button name="monthlyTimeChart" class="view-type" value="monthly">
-            {% comment %} Translators: This labels a button to change to monthly view. {% endcomment %}
-            {% trans "Monthly" %}
-        </button>&emsp;
-       <button name="yearlyTimeChart" class="view-type" value="yearly">
-            {% comment %} Translators: This labels a button to change to yearly view. {% endcomment %}
-            {% trans "Yearly" %}
-        </button>
+       <button name="dailyTimeChart" class="view-type" value="daily">Daily</button>&emsp;
+       <button name="monthlyTimeChart" class="view-type" value="monthly">Monthly</button>&emsp;
+       <button name="yearlyTimeChart" class="view-type" value="yearly">Yearly</button>
     </div>
     <div class="row">
         <div align="center" id="loader3">
@@ -180,37 +171,52 @@
         <div>
             <canvas class="timeChart" id="dailyTimeChart" status="not-loaded" width="400" height="400"></canvas>
         </div>
-        <div>
+         <div>
             <canvas class="timeChart" id="monthlyTimeChart" status="not-loaded" width="400" height="400"></canvas>
         </div>
-        <div>
+         <div>
             <canvas class="timeChart" id="yearlyTimeChart" status="not-loaded" width="400" height="400"></canvas>
         </div>
         <div class="row download-edits">
-            <a href="/time_csv/?{{ query_string }}">
+
+            <a id="dailyTimeChart-csv" class="downloadAnchor">
                 <button>
-                    {% comment %} Translators: This labels a button to download the data in CSV format. {% endcomment %}
+                    {% comment %} Translators: This labels a button to download the daily data in CSV format. {% endcomment %}
                     {% trans "Download CSV" %}
                 </button>
             </a>
-            <a id="dailyTimeChart-url" class="downloadAnchor">
-                <button id="button-dailyTimeChart-url">
-                    {% comment %} Translators: This labels a button to download the data in JPG format. {% endcomment %}
+            <a id="monthlyTimeChart-csv" class="downloadAnchor">
+                <button >
+                    {% comment %} Translators: This labels a button to download the monthly data in CSV format. {% endcomment %}
+                    {% trans "Download CSV" %}
+                </button>
+            </a>
+            <a id="yearlyTimeChart-csv" class="downloadAnchor">
+                <button>
+                    {% comment %} Translators: This labels a button to download the yearly data in CSV format. {% endcomment %}
+                    {% trans "Download CSV" %}
+                </button>
+            </a>
+
+            <a id="dailyTimeChart-jpg" class="downloadAnchor">
+                <button>
+                    {% comment %} Translators: This labels a button to download the daily data in JPG format. {% endcomment %}
                     {% trans "Download JPG" %}
                 </button>
             </a>
-            <a id="monthlyTimeChart-url" class="downloadAnchor">
-                <button id="button-monthlyTimeChart-url">
-                    {% comment %} Translators: This labels a button to download the data in JPG format. {% endcomment %}
+            <a id="monthlyTimeChart-jpg" class="downloadAnchor">
+                <button>
+                    {% comment %} Translators: This labels a button to download the monthly data in JPG format. {% endcomment %}
                     {% trans "Download JPG" %}
                 </button>
             </a>
-            <a id="yearlyTimeChart-url" class="downloadAnchor">
-                <button id="button-yearlyTimeChart-url">
-                    {% comment %} Translators: This labels a button to download the data in JPG format. {% endcomment %}
+            <a id="yearlyTimeChart-jpg" class="downloadAnchor">
+                <button>
+                    {% comment %} Translators: This labels a button to download the yearly data in JPG format. {% endcomment %}
                     {% trans "Download JPG" %}
                 </button>
             </a>
+
         </div>
     </div>
     <hr>
