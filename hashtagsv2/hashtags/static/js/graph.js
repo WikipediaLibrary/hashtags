@@ -161,18 +161,20 @@ $(".view-type").click(function() {
 
 // shows the required chart and hides oher
 function show_chart(view_type) {
-    //for chart
     $(".timeChart").hide();
     $('#' + view_type).show();
-    // for DOWNLOAD JPG buttons
-    $(".downloadAnchor").hide();
-    $('#'+view_type+'-url').show();
 
+    $(".downloadAnchor").hide();
+    $('#'+view_type+'-jpg').show();
+    $('#'+view_type+'-csv').show();
+
+    
     for (var i = 0; i < 3; i++) {
         ($(".view-type")[i]).style.borderStyle = "hidden";
     }
     document.getElementsByName(view_type)[0].style.borderStyle = "solid";
 
+    
     var status = $('#' + view_type).attr("status");
     if (status != 'loaded') {
         $('#' + view_type).attr("status", "loaded");
@@ -215,9 +217,12 @@ function draw_chart(data) {
             // toDataURL function gets url of chart in type of jpeg image
             animation: {
                 onComplete: function() {
+                    // sets download jpg button
                     let time_link = document.getElementById(data['view_type']).toDataURL("image/jpeg");
-                    document.getElementById(data['view_type']+'-url').href = time_link;
-                    document.getElementById(data['view_type']+'-url').setAttribute('download', 'edits_over_time.jpg');
+                    document.getElementById(data['view_type']+'-jpg').href = time_link;
+                    document.getElementById(data['view_type']+'-jpg').setAttribute('download', 'edits_over_time.jpg');
+                    // sets download csv button
+                    document.getElementById(data['view_type']+'-csv').href = '/time_csv/?' + url_param + '&amp;view_type=' + data['view_type'] ;
                 }
             }
         }
