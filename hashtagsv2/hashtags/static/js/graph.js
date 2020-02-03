@@ -141,9 +141,8 @@ $(".view-type").click(function() {
     if (status == "loaded") {
         show_chart(chart_name);
     } else {
-        var view_type = $(this).attr("value");
         //adding view_type parameter to url
-        extra_url_param = url_param + '&amp;view_type=' + view_type
+        extra_url_param = url_param + '&amp;view_type=' + chart_name
 
         $.ajax({
             url: '/api/time_stats/?' + extra_url_param,
