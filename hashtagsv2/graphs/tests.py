@@ -132,16 +132,48 @@ class StatisticsTest(TestCase):
 		# CSV should contain 4 lines - header plus 3 entries
 		self.assertEqual(len(page_content.splitlines()), 4)
 
-	def test_time_csv_view(self):
+	def test_time_csv_daily_view(self):
 		factory = RequestFactory()
-		
 		data = {
-			'query': 'test_hashtag1'
+			'query': 'test_hashtag1',
+			'view_type': 'dailyTimeChart'
 		}
-		request = factory.get('/time_csv', data)
+		request = factory.get('/time_csv',data)
 		response = views.time_csv(request)
 		page_content = response.content
+		
+		# CSV should contain 5 lines - header plus 4 entries
+		self.assertEqual(len(page_content.splitlines()), 5)
 
+	def test_time_csv_monthly_view(self):
+		for i in range(1,5):
+			HashtagFactory(hashtag='test_hashtag4', rc_id=120+i, timestamp=datetime(2016,i,1+i))
+
+		factory = RequestFactory()
+		data = {
+			'query': 'test_hashtag4',
+			'view_type': 'monthlyTimeChart'
+		}
+		request = factory.get('/time_csv',data)
+		response = views.time_csv(request)
+		page_content = response.content
+		
+		# CSV should contain 5 lines - header plus 4 entries
+		self.assertEqual(len(page_content.splitlines()), 5)
+
+	def test_time_csv_yearly_view(self):
+		for i in range(1,5):
+			HashtagFactory(hashtag='test_hashtag5', rc_id=120+i, timestamp=datetime(2011+i,i,i+3))
+
+		factory = RequestFactory()
+		data = {
+			'query': 'test_hashtag5',
+			'view_type': 'yearlyTimeChart'
+		}
+		request = factory.get('/time_csv',data)
+		response = views.time_csv(request)
+		page_content = response.content
+		
 		# CSV should contain 5 lines - header plus 4 entries
 		self.assertEqual(len(page_content.splitlines()), 5)
 

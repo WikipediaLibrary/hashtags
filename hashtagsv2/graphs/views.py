@@ -1,5 +1,7 @@
 import csv
 import math
+import json
+import itertools
 from datetime import datetime, timedelta, timezone
 from dateutil.relativedelta import relativedelta
 from django.utils.translation import gettext as _
@@ -68,8 +70,17 @@ def time_statistics_data(request):
     # key value pairs of date unit and number of edits
     time_dic = {}
 
+    number_of_days = date_range.days
+    # if the request is to change the view_type
+    if "view_type" in request_dict:
+        view_type = request_dict['view_type']
+        number_of_days = 9999
+    else:
+        view_type = 'NOTA'
+    
     # Split by days
-    if date_range.days < 90:
+    if  number_of_days < 90 or view_type == 'dailyTimeChart':
+        view_type = 'dailyTimeChart'
         qs = hashtags.annotate(day = TruncDay('timestamp')).values('day').annotate(edits = Count('rc_id')).order_by()
         
         for item in qs:
@@ -84,7 +95,8 @@ def time_statistics_data(request):
                 edits_array.append(0)
             earliest_date = earliest_date + timedelta(days=1)
     # Split by months
-    elif date_range.days >=90 and date_range.days <1095:
+    elif number_of_days >=90 and number_of_days <1095 or view_type == 'monthlyTimeChart':
+        view_type = 'monthlyTimeChart'
         qs = hashtags.annotate(month = TruncMonth('timestamp')).values('month').annotate(edits = Count('rc_id')).order_by()
         for item in qs:
             time_dic[item['month'].date()] = item['edits']
@@ -101,6 +113,7 @@ def time_statistics_data(request):
             earliest_date = earliest_date + relativedelta(months= +1)
     # Split by years
     else:
+        view_type = 'yearlyTimeChart'
         qs = hashtags.annotate(year = TruncYear('timestamp')).values('year').annotate(edits = Count('rc_id')).order_by()       
         for item in qs:
             time_dic[item['year'].date()] = item['edits']
@@ -118,7 +131,8 @@ def time_statistics_data(request):
 
     data = {
         'edits_array': edits_array,
-        'time_array': time_array
+        'time_array': time_array,
+        'view_type' : view_type
     }
     return JsonResponse(data)
 
@@ -216,30 +230,28 @@ def projects_csv(request):
     return response
 
 def time_csv(request):
-    request_dict = request.GET.dict()
+    temp = time_statistics_data(request)
+    temp = temp.content
+    # converting byte str to str
+    temp = temp.decode('ASCII')
+    temp = json.loads(temp)
+
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="hashtags_dates.csv"'
-
-    hashtags = hashtag_queryset(request_dict)
-    earliest_date = hashtags[len(hashtags)-1].timestamp.date()
-    latest_date = hashtags.first().timestamp.date()
-
-    time_dic = {}
-    qs = hashtags.annotate(day = TruncDay('timestamp')).values('day').annotate(edits = Count('rc_id')).order_by()
-    for item in qs:
-        time_dic[item['day'].date()] = item['edits']
+    
+    if temp['view_type'] == 'dailyTimeChart':
+    	header = 'Date'
+    elif temp['view_type'] == 'monthlyTimeChart':
+    	header = 'Month'
+    else:
+    	header = 'Year'
     writer = csv.writer(response)
     writer.writerow([
         # Translators: Date on which edit is made.
-        _('Date'),
+        _(header),
         # Translators: Edits done on wikimedia projects.
         _('Edits')])
-    while earliest_date <= latest_date:
-        if earliest_date in time_dic:
-            temp = time_dic.pop(earliest_date)
-            writer.writerow([earliest_date.strftime("%Y-%m-%d"), temp])
-        else:
-            writer.writerow([earliest_date.strftime("%Y-%m-%d"), 0])
-        earliest_date = earliest_date + timedelta(days=1)
+    for i,j in zip(temp['time_array'],temp['edits_array']):
+        writer.writerow([i,j])
     
     return response
