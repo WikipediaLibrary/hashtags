@@ -239,10 +239,16 @@ def time_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="hashtags_dates.csv"'
     
+    if temp['view_type'] == 'dailyTimeChart':
+    	header = 'Date'
+    elif temp['view_type'] == 'monthlyTimeChart':
+    	header = 'Month'
+    else:
+    	header = 'Year'
     writer = csv.writer(response)
     writer.writerow([
         # Translators: Date on which edit is made.
-        _('Date'),
+        _(header),
         # Translators: Edits done on wikimedia projects.
         _('Edits')])
     for i,j in zip(temp['time_array'],temp['edits_array']):
