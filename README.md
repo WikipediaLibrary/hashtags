@@ -23,7 +23,7 @@ This tool is also running on a Horizon VPS instance, rather than Toolforge, to e
 
 To set the tool up for local development, you will need:
 
-* [Docker](https://www.docker.com)
+* [Docker](https://docs.docker.com/engine/install)
 * [Docker Compose](https://docs.docker.com/compose/install)
 
 If you are installing Docker on Mac or Windows, Docker Compose is likely already included in your install.
