@@ -16,7 +16,7 @@ class Hashtag(models.Model):
 
     timestamp = models.DateTimeField()
     username = models.CharField(max_length=255)
-    page_title = models.CharField(max_length=255)
+    page_title = models.CharField(max_length=500)
 
     # Per https://meta.wikimedia.org/wiki/Help:Edit_summary, summaries
     # have a maximum possible length of 800 characters.
