@@ -13,29 +13,29 @@ from . import views
 
 class HashtagSearchTest(TestCase):
     @classmethod
-    def setUp(self):
+    def setUp(cls):
         # Create two sets of 5 hashtag entries
         for hashtag_text in ['hashtag1', 'hashtag2']:
             for i in range(5):
                 _ = HashtagFactory(hashtag=hashtag_text)
 
-        self.project_hashtag = HashtagFactory(
+        cls.project_hashtag = HashtagFactory(
             hashtag='hashtag3',
             domain='fr.wikipedia.org')
 
-        self.date_hashtag = HashtagFactory(
+        cls.date_hashtag = HashtagFactory(
             hashtag='hashtag4',
             domain='ja.wikipedia.org',
             timestamp=datetime(2017,6,1))
 
-        self.user_hashtag = HashtagFactory(
+        cls.user_hashtag = HashtagFactory(
             hashtag='hashtag5',
             domain='en.wikipedia.org',
             username='xyz'
         )
 
-        self.message_patcher = patch('hashtagsv2.hashtags.views.messages.add_message')
-        self.message_patcher.start()
+        cls.message_patcher = patch('hashtagsv2.hashtags.views.messages.add_message')
+        cls.message_patcher.start()
 
     @classmethod
     def setUpClass(cls):
