@@ -4,12 +4,13 @@ from datetime import datetime, timedelta, timezone
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Count
-from django.views.generic import FormView, ListView, TemplateView, View
+from django.views.generic import ListView, TemplateView
 from django.utils.translation import gettext as _
 
 from .forms import SearchForm
-from .helpers import split_hashtags, hashtag_queryset, get_hashtags_context
+from .helpers import hashtag_queryset, get_hashtags_context
 from .models import Hashtag
+
 
 class Index(ListView):
     model = Hashtag
@@ -68,11 +69,11 @@ class Index(ListView):
 
             return hashtag_qs
 
-
         # We're mixing forms and listview; paginate_by expects to always
         # have *something* to paginate, so we send back an empty list
         # if the form hasn't been filled yet.
         return []
+
 
 def csv_download(request):
     # If this fails for large files we should consider
@@ -104,6 +105,7 @@ def csv_download(request):
 
     return response
 
+
 def json_download(request):
     request_dict = request.GET.dict()
 
@@ -121,6 +123,7 @@ def json_download(request):
         })
 
     return JsonResponse({"Rows": row_list})
+
 
 class Docs(TemplateView):
     template_name = 'hashtags/docs.html'

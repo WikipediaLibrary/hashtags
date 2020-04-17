@@ -6,6 +6,7 @@ from .models import Hashtag
 from django.db.models import Count
 from urllib.parse import urlencode
 
+
 def split_hashtags(hashtag_list):
     split_hashtags_list = hashtag_list.split(",")
     stripped_hashtags = [x.strip() for x in split_hashtags_list]
@@ -14,6 +15,7 @@ def split_hashtags(hashtag_list):
     final_hashtags = [x[1:] if x.startswith("#") else x for x in stripped_hashtags]
 
     return final_hashtags
+
 
 def hashtag_queryset(request_dict):
     """
@@ -27,11 +29,12 @@ def hashtag_queryset(request_dict):
     if 'search_type' in request_dict:
         if request_dict['search_type'] == 'and':
             rcids_for_hashtag=[]
-            #Collect rc_ids for each individual tag
+            # Collect rc_ids for each individual tag
             for hashtag in hashtag_list:
                 qs=Hashtag.objects.filter(hashtag=hashtag).values_list('rc_id', flat=True).distinct()
                 rcids_for_hashtag.append(set(qs))
-            #Find common rc_ids by taking intersection of above obtained rc_ids 
+            # Find common rc_ids by taking intersection of above
+            # obtained rc_ids
             final_rcids = rcids_for_hashtag[0].intersection(*rcids_for_hashtag)
             queryset = Hashtag.objects.filter(rc_id__in=list(final_rcids))
         else:
@@ -87,6 +90,7 @@ def hashtag_queryset(request_dict):
 
     return ordered_queryset
 
+
 def get_hashtags_context(request, hashtags, context):
     # Context data for StatisticsView and Index view
     
@@ -110,6 +114,8 @@ def get_hashtags_context(request, hashtags, context):
     context['query_string'] = urlencode(request_dict)
     return context
 
+
 def results_count(qs, field, sort_param):
-    # Return edits count for a particular field (for eg. users) sorted by sort_param (for eg. edits)
-    return qs.values(field).annotate(edits = Count('rc_id')).order_by(sort_param)
+    # Return edits count for a particular field (for eg. users)
+    # sorted by sort_param (for eg. edits)
+    return qs.values(field).annotate(edits=Count('rc_id')).order_by(sort_param)
