@@ -11,6 +11,28 @@ from .helpers import split_hashtags
 from . import views
 
 
+class HomepageTest(TestCase):
+    @classmethod
+    def setUp(cls):
+        pass
+
+    def tearDown(self):
+        super(HomepageTest, self).tearDown()
+
+    def test_homepage_no_data(self):
+        """
+        Test that the Hashtags homepage loads successfully
+        when there is no data in the database.
+        """
+        url = reverse('index')
+        factory = RequestFactory()
+
+        request = factory.get(url)
+        response = views.Index.as_view()(request)
+
+        self.assertEqual(response.status_code, 200)
+
+
 class HashtagSearchTest(TestCase):
     @classmethod
     def setUp(cls):
