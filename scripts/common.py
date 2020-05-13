@@ -14,10 +14,16 @@ EXCLUDED = ('redirect',
 
 
 def hashtag_match(comment):
-	# From https://gist.github.com/mahmoud/237eb20108b5805aed5f
-	hashtag_re = re.compile("(?:^|\s)[＃#]{1}(\w+)")
+    # Save some time by discarding this edit if it doesn't have
+    # a hashtag symbol at all
+    if "#" not in comment or "＃" not in comment:
+        return None
 
-	return hashtag_re.findall(comment)
+    # Now do regex to see if it's a valid hashtag
+    # From https://gist.github.com/mahmoud/237eb20108b5805aed5f
+    hashtag_re = re.compile("(?:^|\s)[＃#]{1}(\w+)")
+
+    return hashtag_re.findall(comment)
 
 
 def valid_hashtag(hashtag):
