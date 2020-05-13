@@ -16,7 +16,7 @@ EXCLUDED = ('redirect',
 def hashtag_match(comment):
     # Save some time by discarding this edit if it doesn't have
     # a hashtag symbol at all
-    if "#" not in comment or "＃" not in comment:
+    if "#" not in comment and "＃" not in comment:
         return None
 
     # Now do regex to see if it's a valid hashtag
