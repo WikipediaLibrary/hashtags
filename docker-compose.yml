@@ -41,6 +41,7 @@ services:
    build:
     context: .
     dockerfile: 'Dockerfile-scripts'
+   restart: unless-stopped
    networks:
      - main
    env_file:
