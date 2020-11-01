@@ -34,7 +34,7 @@ After cloning the repository, copy `template.env` to `.env` and start the tool b
 
 The `-d` option will allow you to run in detached mode.
 
-You should now be able to access the tool on `127.0.0.1`.
+You should now be able to access the tool in your browser on `http://localhost`.
 
 When the tool is first run the scripts container will fail because migrations haven't finished running yet. There are solutions to this that <a href="https://phabricator.wikimedia.org/T207277">will be implemented eventually</a>.
 
