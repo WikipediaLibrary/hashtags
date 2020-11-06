@@ -24,7 +24,20 @@ else:
 if len(sys.argv) > 1 and sys.argv[1] == 'nohistorical':
     url = base_stream_url
 
-for event in EventSource(url):
+for event in EventSource(
+        url,
+        # The retry argument sets the delay between retries in milliseconds.
+        # We're setting this to 5 minutes.
+        # There's no way to set the max_retries value with this library,
+        # but since it depends upon requests, which in turn uses urllib3
+        # by default, we get a default max_retries value of 3.
+        retry=300000,
+        # The timeout argument gets passed to requests.get.
+        # An integer value sets connect (socket connect) and
+        # read (time to first byte / since last byte) timeout values.
+        # A tuple value sets each respective value independently.
+        # https://requests.readthedocs.io/en/latest/user/advanced/#timeouts
+        timeout=(3.05, 30)):
     if event.event == 'message':
         try:
             change = json.loads(event.data)
