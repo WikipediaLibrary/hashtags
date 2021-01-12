@@ -28,6 +28,10 @@ class Hashtag(models.Model):
     # Revision ID (https://www.mediawiki.org/wiki/Manual:Revision_table)
     rev_id = models.PositiveIntegerField(null=True)
 
+    # Whether this change introduces different media in the page.
+    has_image = models.BooleanField(default=False)
+    has_video = models.BooleanField(default=False)
+
     def get_values_list(self):
         # When returning hashtag results we're using a values_list rather than
         # a full queryset so that multiple hashtag searches can be properly
