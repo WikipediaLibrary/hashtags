@@ -17,9 +17,9 @@ def insert_db(hashtag, change):
     query = """
         INSERT INTO hashtags_hashtag
         (hashtag, domain, timestamp, username, page_title,
-        edit_summary, rc_id, rev_id)
+        edit_summary, rc_id, rev_id, has_image, has_video)
         VALUES
-        (%s, %s, %s, %s, %s, %s, %s, %s)
+        (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
 
     dt_without_plus = change['meta']['dt'][:19]
@@ -40,7 +40,9 @@ def insert_db(hashtag, change):
         change['title'],
         change['comment'],
         change['id'],
-        revision_id
+        revision_id,
+        change['has_image'],
+        change['has_video'],
         )
 
     try:

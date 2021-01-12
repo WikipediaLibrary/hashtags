@@ -1,9 +1,94 @@
+import datetime
+import functools
 import json
 from sseclient import SSEClient as EventSource
 import sys
 
 from common import valid_hashtag, valid_edit, hashtag_match
 import db
+
+import mwapi
+
+@functools.lru_cache(maxsize=None)
+def get_wiki_session(domain):
+    return mwapi.Session(
+        'https://{}/'.format(domain), 'hashtags')
+
+def query_media_in_revision(session, rev_id):
+    images_args = {
+        'action': 'parse',
+        'prop': 'images',
+        'oldid': rev_id,
+    }
+    try:
+        media_filenames = set(session.get(**images_args)['parse']['images'])
+    except mwapi.errors.APIError as e:
+        if e.code == 'nosuchrevid':
+            # Deleted page?
+            pass
+        raise
+    return media_filenames
+
+def query_media_types(session, media_filenames):
+    def query_imageinfo(titles, iistart = None):
+        imageinfo_args = {
+            'action': 'query',
+            'prop': 'imageinfo',
+            'titles': '|'.join(titles),
+            'iiprop': 'mediatype|url',
+        }
+        if iistart is not None:
+            imageinfo_args['iistart'] = iistart
+        return session.get(**imageinfo_args)
+
+    media_types = set()
+    media_filenames = list(media_filenames)
+    while media_filenames:
+        iistart = None
+        # Query the API 50 files at a time.
+        # See https://www.mediawiki.org/wiki/API:Query for this limit.
+        titles = ['File:' + f for f in media_filenames[:50]]
+        while True:
+            result = query_imageinfo(titles, iistart)
+            for m in result['query']['pages'].values():
+                if 'imageinfo' not in m:
+                    # Broken link
+                    continue
+                if 'mediatype' not in m['imageinfo'][0]:
+                    # Probably filehidden?
+                    continue
+            if 'continue' in result:
+                media_types.add(m['imageinfo'][0]['mediatype'])
+                iistart = result['continue']['iistart']
+            else:
+                break
+        media_filenames = media_filenames[50:]
+    return media_types
+
+def populate_media_information(change):
+    change['has_image'] = False
+    change['has_video'] = False
+    if 'revision' not in change:
+        return
+    new_rev = change['revision']['new']
+    old_rev = change['revision'].get('old', None)
+
+    try:
+        session = get_wiki_session(change['meta']['domain'])
+        new_media = query_media_in_revision(session, new_rev)
+        old_media = set()
+        if new_media and old_rev is not None:
+            old_media = query_media_in_revision(session, old_rev)
+
+        added_media = new_media - old_media
+        if added_media:
+            added_media_types = query_media_types(session, added_media)
+            change['has_image'] = bool(
+                    set(['DRAWING', 'BITMAP']) & added_media_types)
+            change['has_video'] = 'VIDEO' in added_media_types
+    except Exception as e:
+        print('Failed to query media: {}. Change: {}'.format(e, change))
+
 
 base_stream_url = 'https://stream.wikimedia.org/v2/stream/recentchange'
 
@@ -53,9 +138,11 @@ for event in EventSource(
                 if db.is_duplicate(hashtag, change['id']):
                     print("Skipped duplicate {hashtag} (rc_id = {id})".format(
                         hashtag=hashtag, id=change['id']))
-
-                elif valid_hashtag(hashtag):
-                    # Check edit_summary length, truncate if necessary
-                    if len(change['comment']) > 800:
-                        change['comment'] = change['comment'][:799]
-                    db.insert_db(hashtag, change)
+                    continue
+                if not valid_hashtag(hashtag):
+                    continue
+                # Check edit_summary length, truncate if necessary
+                if len(change['comment']) > 800:
+                    change['comment'] = change['comment'][:799]
+                populate_media_information(change)
+                db.insert_db(hashtag, change)
