@@ -17,3 +17,5 @@ class HashtagFactory(factory.django.DjangoModelFactory):
 	page_title = factory.Faker('word')
 	edit_summary = factory.Faker('sentence')
 	rc_id = random.randint(1,100000)
+	has_image = False
+	has_video = False

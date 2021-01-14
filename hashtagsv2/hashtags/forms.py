@@ -35,7 +35,16 @@ class SearchForm(forms.Form):
 		# Translators: Label for the section of form where we ask user to specify a initial date for search results.
 		label= _("Start date:"),
 		widget=DateInput())
+
 	enddate = forms.DateField(required=False,
 		# Translators: Label for the section of form where we ask user to specify the last date for search results. 
 		label= _("End date:"),
 		widget=DateInput())
+
+	image = forms.BooleanField(required=False,
+		# Translators: Label for the section of form where we ask user whether to filter edits that introduce images.
+		label= _("Edit adds image:"))
+
+	video = forms.BooleanField(required=False,
+		# Translators: Label for the section of form where we ask user whether to filter edits that introduce videos.
+                label= _("Edit adds video:"))

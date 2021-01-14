@@ -40,6 +40,6 @@ class Hashtag(models.Model):
         # when testing
         return Hashtag.objects.filter(pk=self.pk).values_list(
             'domain', 'timestamp', 'username', 'page_title', 'edit_summary',
-            'rc_id', 'rev_id',
+            'rc_id', 'rev_id', 'has_image', 'has_video',
             named=True
         )[0]
