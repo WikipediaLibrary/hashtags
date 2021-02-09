@@ -377,3 +377,43 @@ class HashtagSearchTest(TestCase):
         self.assertEqual(len(object_list), 1)
         # And it is the correct edit
         self.assertEqual(object_list[0].rc_id, 1234)
+
+    def test_image_filter(self):
+        """
+        Test that we can filter by edits that introduce images.
+        """
+        HashtagFactory(hashtag='hashtag1', has_image=True, rc_id=1234)
+
+        factory = RequestFactory()
+        data = {
+            'query': 'hashtag1',
+            'image': 'on',
+        }
+        request = factory.get(self.url, data)
+        response = views.Index.as_view()(request)
+        object_list = response.context_data['object_list']
+
+        # We get one result
+        self.assertEqual(len(object_list), 1)
+        # And it is the correct edit
+        self.assertEqual(object_list[0].rc_id, 1234)
+
+    def test_video_filter(self):
+        """
+        Same as above, for video.
+        """
+        HashtagFactory(hashtag='hashtag1', has_video=True, rc_id=1234)
+
+        factory = RequestFactory()
+        data = {
+            'query': 'hashtag1',
+            'video': 'on',
+        }
+        request = factory.get(self.url, data)
+        response = views.Index.as_view()(request)
+        object_list = response.context_data['object_list']
+
+        # We get one result
+        self.assertEqual(len(object_list), 1)
+        # And it is the correct edit
+        self.assertEqual(object_list[0].rc_id, 1234)
