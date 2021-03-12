@@ -57,7 +57,7 @@ def query_media_types(session, media_filenames):
                 if 'mediatype' not in m['imageinfo'][0]:
                     # Probably filehidden?
                     continue
-            media_types.add(m['imageinfo'][0]['mediatype'])
+                media_types.add(m['imageinfo'][0]['mediatype'])
             if 'continue' in result:
                 iistart = result['continue']['iistart']
             else:
