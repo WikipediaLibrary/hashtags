@@ -9,6 +9,11 @@ import db
 
 import mwapi
 
+# An arbitrary limit to how many times we follow the "continue" response in
+# imageinfo requests. See https://github.com/WikipediaLibrary/hashtags/issues/64
+# for details.
+MAX_IMAGEINFO_CONTINUES = 50
+
 @functools.lru_cache(maxsize=None)
 def get_wiki_session(domain):
     return mwapi.Session(
@@ -48,7 +53,7 @@ def query_media_types(session, media_filenames):
         # Query the API 50 files at a time.
         # See https://www.mediawiki.org/wiki/API:Query for this limit.
         titles = ['File:' + f for f in media_filenames[:50]]
-        while True:
+        for _ in range(MAX_IMAGEINFO_CONTINUES):
             result = query_imageinfo(titles, iistart)
             for m in result['query']['pages'].values():
                 if 'imageinfo' not in m:
@@ -62,6 +67,8 @@ def query_media_types(session, media_filenames):
                 iistart = result['continue']['iistart']
             else:
                 break
+        else:
+            print('Too many imageinfo continues, moving on!')
         media_filenames = media_filenames[50:]
     return media_types
 
