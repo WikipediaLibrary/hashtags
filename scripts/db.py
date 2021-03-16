@@ -49,9 +49,16 @@ def insert_db(hashtag, change):
         cursor.execute(query, values)
     except mysql.connector.errors.IntegrityError:
         print("Skipped rc_id {rc_id} due to integrity error".format(
-            rc_id=change['id']
-        ))
+            rc_id=change['id']))
         return False
+    except mysql.connector.errors.DataError as data_error:
+        # Ignore changes whose data won't fit in our database columns, but crash
+        # on other kinds of data error that we don't expect.
+        if data_error.errno == mysql.connector.errorcode.ER_DATA_TOO_LONG:
+            print("Skipped rc_id {rc_id} due to data error {data_error}".format(
+                rc_id=change['id'], data_error=data_error))
+            return False
+        raise
 
     hashtag_db.commit()
 
