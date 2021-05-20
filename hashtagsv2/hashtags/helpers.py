@@ -80,6 +80,9 @@ def hashtag_queryset(request_dict):
     if request_dict.get('video', False):
         queryset = queryset.filter(has_video=True)
 
+    if request_dict.get('audio', False):
+        queryset = queryset.filter(has_audio=True)
+
     # We're using MySQL, which doesn't support DISTINCT ON, but we
     # want to allow multiple hashtags to be queried simultaneously while
     # not displaying the same edit more than once. We can achieve this
@@ -90,7 +93,7 @@ def hashtag_queryset(request_dict):
     ordered_queryset = queryset.order_by(
         '-timestamp').values_list(
             'domain', 'timestamp', 'username', 'page_title', 'edit_summary',
-            'rc_id', 'rev_id', 'has_image', 'has_video',
+            'rc_id', 'rev_id', 'has_image', 'has_video', 'has_audio',
                 named=True
                 ).distinct()
 

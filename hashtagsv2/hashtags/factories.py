@@ -19,3 +19,4 @@ class HashtagFactory(factory.django.DjangoModelFactory):
 	rc_id = random.randint(1,100000)
 	has_image = False
 	has_video = False
+	has_audio = False
