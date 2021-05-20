@@ -31,6 +31,7 @@ class Hashtag(models.Model):
     # Whether this change introduces different media in the page.
     has_image = models.BooleanField(default=False)
     has_video = models.BooleanField(default=False)
+    has_audio = models.BooleanField(default=False)
 
     def get_values_list(self):
         # When returning hashtag results we're using a values_list rather than
