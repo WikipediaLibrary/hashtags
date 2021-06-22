@@ -37,7 +37,7 @@ class SearchForm(forms.Form):
 		widget=DateInput())
 
 	enddate = forms.DateField(required=False,
-		# Translators: Label for the section of form where we ask user to specify the last date for search results. 
+		# Translators: Label for the section of form where we ask user to specify the last date for search results.
 		label= _("End date:"),
 		widget=DateInput())
 
@@ -48,3 +48,7 @@ class SearchForm(forms.Form):
 	video = forms.BooleanField(required=False,
 		# Translators: Label for the section of form where we ask user whether to filter edits that introduce videos.
                 label= _("Edit adds video:"))
+
+	audio = forms.BooleanField(required=False,
+		# Translators: Label for the section of form where we ask user whether to filter edits that introduce audio.
+                label= _("Edit adds audio:"))

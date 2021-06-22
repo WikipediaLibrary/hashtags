@@ -75,6 +75,7 @@ def query_media_types(session, media_filenames):
 def populate_media_information(change):
     change['has_image'] = False
     change['has_video'] = False
+    change['has_audio'] = False
     if 'revision' not in change:
         return
     new_rev = change['revision']['new']
@@ -93,6 +94,7 @@ def populate_media_information(change):
             change['has_image'] = bool(
                     set(['DRAWING', 'BITMAP']) & added_media_types)
             change['has_video'] = 'VIDEO' in added_media_types
+            change['has_audio'] = 'AUDIO' in added_media_types
     except Exception as e:
         print('Failed to query media: {}. Change: {}'.format(e, change))
 
