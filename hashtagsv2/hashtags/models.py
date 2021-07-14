@@ -7,13 +7,15 @@ class Hashtag(models.Model):
     We should always be gathering every piece of the model - edit summary
     is optional, but we shouldn't be logging anything with no summary.
     """
-    hashtag = models.CharField(max_length=128)
+    hashtag = models.CharField(max_length=128, db_index=True)
 
     # Hashtags v1 only recorded language Wikipedia project. Recording
     # the entire domain allows us to track edits to other projects too.
     domain = models.CharField(max_length=32)
 
-    timestamp = models.DateTimeField()
+    # We sometimes do date-based queries, like when finding the top tags for the
+    # last month. An index on the timestamp speeds up those queries.
+    timestamp = models.DateTimeField(db_index=True)
     username = models.CharField(max_length=255)
     page_title = models.CharField(max_length=500)
 
