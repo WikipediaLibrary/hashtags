@@ -46,3 +46,12 @@ class Hashtag(models.Model):
             'rc_id', 'rev_id', 'has_image', 'has_video', 'has_audio',
             named=True
         )[0]
+
+    class Meta:
+        # Indexes we need for computing statistics.
+        index_together = [
+            ('hashtag', 'timestamp'),
+            ('hashtag', 'rev_id'),
+            ('hashtag', 'domain', 'page_title'),
+            ('hashtag', 'username'),
+        ]
