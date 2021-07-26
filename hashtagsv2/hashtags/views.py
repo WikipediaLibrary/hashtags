@@ -38,11 +38,20 @@ class Index(ListView):
         # already submitted something.
         context['form'] = self.form_class(self.request.GET)
 
-        hashtags = self.object_list
-        if hashtags:
-            context = get_hashtags_context(self.request, hashtags, context)
+        # If we have any paginated data to display, compute statistics for
+        # the overall, non paginated queryset. `if queryset:` actually evaluates
+        # the queryset and queries the database. We want to make sure to only
+        # evaluate the paginated queryset we are displaying.
+        if context['page_obj']:
+            context = get_hashtags_context(
+                self.request, self.object_list, context)
+        elif self.request.GET.get('query'):
+            messages.add_message(self.request, messages.INFO,
+                # Translators: Message to be displayed when there are no
+                # results for the search.
+                _('No results found.'))
         else:
-            # We don't need top tags if we're showing results
+            # We're just displaying the home page with no query.
             top_tags = Hashtag.objects.filter(
                 timestamp__gt=datetime.now() - timedelta(days=30)
             ).values_list('hashtag').annotate(
@@ -60,13 +69,8 @@ class Index(ListView):
                 messages.add_message(self.request, messages.INFO,
                 # Translators: Message to be displayed when a user specify 'wikidata' in the project field.
                 _('Unfortunately Wikidata searching is not currently supported.'))
-            else:    
+            else:
                 hashtag_qs = hashtag_queryset(form_data)
-
-                if not hashtag_qs:
-                    messages.add_message(self.request, messages.INFO,
-                    # Translators: Message to be displayed when there are no results for the search.
-                    _('No results found.'))                     
 
             return hashtag_qs
 

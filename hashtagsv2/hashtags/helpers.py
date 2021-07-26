@@ -102,17 +102,28 @@ def hashtag_queryset(request_dict):
 
 def get_hashtags_context(request, hashtags, context):
     # Context data for StatisticsView and Index view
-    
+    # TODO: We should be able to cache this across pages.
+
     hashtag_query = request.GET.get('query')
     context['hashtag_query_list'] = split_hashtags(hashtag_query)
 
-    # Context for the stats section
-    context['revisions'] = len(hashtags)
-    context['oldest'] = hashtags[len(hashtags)-1].timestamp.date()
-    context['newest'] = hashtags.first().timestamp.date()
-    context['pages'] = hashtags.values('page_title', 'domain').distinct().count()
-    context['users'] = hashtags.values('username').distinct().count()
-    context['projects'] = hashtags.values('domain').distinct().count()
+    # We use queries derived from the main queryset, so we keep most parameters
+    # (e.g. start and end date), but remove the ordering and select only the
+    # fields we need.
+    context['oldest'] = (
+        hashtags.order_by().values('timestamp').earliest('timestamp')
+    )['timestamp'].date()
+    context['newest'] = (
+        hashtags.order_by().values('timestamp').latest('timestamp')
+    )['timestamp'].date()
+    context['revisions'] = (
+        hashtags.order_by().values('rev_id').distinct().count())
+    context['projects'] = (
+        hashtags.order_by().values('domain').distinct().count())
+    context['pages'] = (
+        hashtags.order_by().values('domain', 'page_title').distinct().count())
+    context['users'] = (
+        hashtags.order_by().values('username').distinct().count())
 
     request_dict = request.GET.dict()
 
