@@ -212,3 +212,9 @@ visibility: visible;
     display: flex;
     flex-direction: column;
 }
+
+#queried-hashtags {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

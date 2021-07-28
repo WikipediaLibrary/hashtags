@@ -60,12 +60,11 @@
     <div class="info">
         <div class="row">
             <div class="two-thirds column">
-                <h2>
+                <h2 id="queried-hashtags">
                     {% for query in hashtag_query_list %}
                     #{{ query }}
                     {% endfor %}
                 </h2>
-                <h2>Statistics</h2>
                 <a href="/?{{ query_string }}">
                     <button>
                         {% comment %} Translators: This labels a button to display a list of results. {% endcomment %}
