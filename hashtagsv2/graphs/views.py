@@ -143,8 +143,8 @@ class StatisticsView(View):
         request_dict = request.GET.dict()
         hashtags = hashtag_queryset(request_dict)
         context = {'form': self.form_class(request.GET)}
-        context['hashtags'] = hashtags
-        if hashtags:
+        context['has_results'] = hashtags[:1].count()
+        if context['has_results']:
             context = get_hashtags_context(request, hashtags, context)
         return render(request, self.template_name, context=context)
 
