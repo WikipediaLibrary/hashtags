@@ -47,6 +47,8 @@ services:
      - main
    env_file:
      - '.env'
+   cap_add:
+     - SYS_PTRACE
    depends_on:
      - db
 

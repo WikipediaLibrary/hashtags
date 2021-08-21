@@ -30,7 +30,9 @@ If you are installing Docker on Mac or Windows, Docker Compose is likely already
 
 After cloning the repository, copy `template.env` to `.env` and start the tool by running:
 
->docker-compose up --build
+```
+docker-compose up --build
+```
 
 The `-d` option will allow you to run in detached mode.
 
@@ -40,10 +42,65 @@ When the tool is first run the scripts container will fail because migrations ha
 
 To fix this problem, simply restart the container with:
 
->docker start hashtags_scripts_1
+```
+docker start hashtags_scripts_1
+```
 
 An old error message may be printed if you're not running in detached mode, but the container should start successfully.
 
 Run tests with:
 
->docker exec -it hashtags_app_1 python manage.py test
+```
+docker exec -it hashtags_app_1 python manage.py test
+```
+
+## Debugging
+
+This section has instructions for attaching [gdb](https://www.gnu.org/software/gdb/) to the `collect_hashtags.py` script and use its [Python tooling](https://devguide.python.org/gdb/) to inspect the state of the process.
+
+This is helpful in case the script appears to be stuck so we can determine what it is trying to do.
+
+Open a privileged shell in the scripts container:
+
+```
+docker exec --privileged  -ti hashtags_scripts_1 bash
+```
+
+The next steps should all be run in that terminal, inside the container.
+
+Install gdb and a text editor of your choosing with:
+
+```
+apt update && apt install gdb nano
+```
+
+Download the source code for the Python version used in the scripts:
+
+```
+wget https://www.python.org/ftp/python/3.5.2/Python-3.5.2.tgz -O - | tar -xzvf -
+```
+
+The version (3.5.2, in this case) should match the one in the `Dockerfile-scripts` file in this repository.
+
+Now, copy the Python gdb library to a suitable place where gdb can find it:
+
+```
+cp Python-3.5.2/Tools/gdb/libpython.py /usr/local/bin/python3.5-gdb.py
+```
+
+Edit `/root/.gdbinit` so it looks like this:
+
+```
+add-auto-load-safe-path /usr/local/bin/python3.5-gdb.py
+set auto-load python-scripts on
+```
+
+Find the process ID of the script through any of the usual means (e.g. `pgrep -lf python`, or `top`).
+
+Finally, you can attach gdb to the process with:
+
+```
+gdb python <pid>
+```
+
+Try running `py-bt` to view the stack, `py-up`/`py-down` to navigate it, and `py-locals` to view local variables!
