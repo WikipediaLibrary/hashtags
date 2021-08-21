@@ -9,6 +9,8 @@ import db
 
 import mwapi
 
+API_REQUEST_TIMEOUT_S = 10.0
+
 # An arbitrary limit to how many times we follow the "continue" response in
 # imageinfo requests. See https://github.com/WikipediaLibrary/hashtags/issues/64
 # for details.
@@ -17,7 +19,8 @@ MAX_IMAGEINFO_CONTINUES = 50
 @functools.lru_cache(maxsize=None)
 def get_wiki_session(domain):
     return mwapi.Session(
-        'https://{}/'.format(domain), 'hashtags')
+        'https://{}/'.format(domain), 'hashtags',
+        timeout = API_REQUEST_TIMEOUT_S)
 
 def query_media_in_revision(session, rev_id):
     images_args = {
