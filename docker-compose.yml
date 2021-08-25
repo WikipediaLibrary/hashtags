@@ -21,6 +21,7 @@ services:
      - "3306:3306"
    networks:
      - main
+   restart: unless-stopped
    command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
    healthcheck:
      test: ["CMD", "mysqladmin", "ping", "-h", "localhost","-phashtag"]
@@ -46,6 +47,8 @@ services:
      - main
    env_file:
      - '.env'
+   cap_add:
+     - SYS_PTRACE
    depends_on:
      - db
 
