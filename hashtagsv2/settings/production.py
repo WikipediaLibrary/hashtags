@@ -4,7 +4,7 @@ from .base import *
 # Instead we have to hardcode the db container IP.
 DATABASES['default']['HOST'] = '172.18.0.2'
 
-ALLOWED_HOSTS += ['172.16.1.222', 'hashtags.wmflabs.org']
+ALLOWED_HOSTS += ['172.16.1.222', 'hashtags.wmflabs.org', 'hashtags.wmcloud.org']
 
 DEBUG = False
 
