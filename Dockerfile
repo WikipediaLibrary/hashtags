@@ -1,5 +1,5 @@
 # Dockerfile
-FROM python:3.9
+FROM quay.io/wikipedialibrary/python:3.9-updated
 
 ENV DJANGO_SETTINGS_MODULE=hashtagsv2.settings.development
 

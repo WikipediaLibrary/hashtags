@@ -14,7 +14,7 @@ services:
    volumes:
      - ./:/app
  db:
-   image: mysql:5.7
+   image: quay.io/wikipedialibrary/mysql:5.7-updated
    env_file:
      - '.env'
    ports:
@@ -28,7 +28,7 @@ services:
      timeout: 20s
      retries: 10
  nginx:
-   image: nginx
+   image: quay.io/wikipedialibrary/nginx:latest-updated
    volumes:
      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
      - ./static:/app/static
