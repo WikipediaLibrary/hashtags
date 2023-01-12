@@ -12,6 +12,7 @@ url_string = window.location.href;
 var url = new URL(url_string);
 var project = url.searchParams.get("project");
 var user  = url.searchParams.get("user");
+var url_param = url.searchParams.toString();
 
 // Hide top projects section when filtering on it
 if (project!=="" && project!==null){
