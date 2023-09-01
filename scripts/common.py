@@ -10,7 +10,9 @@ EXCLUDED = ('redirect',
             'if',
             'rs',
             'default',
-            'mw')
+            'mw',
+            # Too many edits & easily trackable via tags on Commons
+            'flickr2commons')
 
 
 def hashtag_match(comment):
