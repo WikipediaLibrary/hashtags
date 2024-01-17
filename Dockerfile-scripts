@@ -8,4 +8,4 @@ COPY requirements/scripts.txt /scripts/
 
 RUN pip install -r requirements/scripts.txt
 
-CMD ["python", "scripts/collect_hashtags.py", "nohistorical"]
+CMD ["python", "scripts/collect_hashtags.py"]

@@ -1,56 +1,72 @@
+---
 version: "2.1"
+volumes:
+  mysql:
 services:
- app:
-   build: .
-   networks:
-     - main
-   env_file:
-     - '.env'
-   depends_on:
-     db:
-       condition: service_healthy
-   ports:
-     - "8000:8000"
-   volumes:
-     - ./:/app
- db:
-   image: quay.io/wikipedialibrary/mysql:5.7-updated
-   env_file:
-     - '.env'
-   ports:
-     - "3306:3306"
-   networks:
-     - main
-   restart: unless-stopped
-   command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
-   healthcheck:
-     test: ["CMD", "mysqladmin", "ping", "-h", "localhost","-phashtag"]
-     timeout: 20s
-     retries: 10
- nginx:
-   image: quay.io/wikipedialibrary/nginx:latest-updated
-   volumes:
-     - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-     - ./static:/app/static
-   ports:
-     - "80:80"
-   networks:
-     - main
-   depends_on:
-     - app
- scripts:
-   build:
-    context: .
-    dockerfile: 'Dockerfile-scripts'
-   restart: unless-stopped
-   networks:
-     - main
-   env_file:
-     - '.env'
-   cap_add:
-     - SYS_PTRACE
-   depends_on:
-     - db
+  app:
+    build: .
+    networks:
+      - main
+    env_file:
+      - '.env'
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app
+  db:
+    image: quay.io/wikipedialibrary/mariadb:10-updated
+    env_file:
+      - '.env'
+    ports:
+      - "3306:3306"
+    networks:
+      - main
+    restart: unless-stopped
+    command: >
+      [
+        'mysqld',
+        '--character-set-server=utf8mb4',
+        '--collation-server=utf8mb4_unicode_ci'
+      ]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-phashtagserver"]
+      timeout: 20s
+      retries: 10
+    volumes:
+      - type: bind
+        source: /usr/local/backup
+        target: /backup
+      - type: volume
+        source: mysql
+        target: /var/lib/mysql
+        volume: {}
+  nginx:
+    image: quay.io/wikipedialibrary/nginx:latest-updated
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./static:/app/static
+    ports:
+      - "80:80"
+    networks:
+      - main
+    depends_on:
+      - app
+  scripts:
+    build:
+      context: .
+      dockerfile: 'Dockerfile-scripts'
+    restart: unless-stopped
+    networks:
+      - main
+    env_file:
+      - '.env'
+    cap_add:
+      - SYS_PTRACE
+    depends_on:
+      - db
 
 networks:
- main:
+  main:

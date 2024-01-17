@@ -6,7 +6,7 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SECRET_KEY = 'fo16z^)jcicydwj!!fw6@r_-99k9iro&ov(@mh#pk^ljkfto&3'
+SECRET_KEY = os.environ['SECRET_KEY']
 
 # Application definition
 
