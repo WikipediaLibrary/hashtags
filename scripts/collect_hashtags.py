@@ -141,20 +141,21 @@ for event in EventSource(
         except ValueError:
             continue
 
-        hashtag_matches = hashtag_match(change['comment'])
-        if hashtag_matches and valid_edit(change):
-            for hashtag in hashtag_matches:
-                if 'id' not in change:
-                    print("Couldn't find recent changes ID in data. Skipping.")
-                    continue
-                if db.is_duplicate(hashtag, change['id']):
-                    print("Skipped duplicate {hashtag} (rc_id = {id})".format(
-                        hashtag=hashtag, id=change['id']))
-                    continue
-                if not valid_hashtag(hashtag):
-                    continue
-                # Check edit_summary length, truncate if necessary
-                if len(change['comment']) > 800:
-                    change['comment'] = change['comment'][:799]
-                populate_media_information(change)
-                db.insert_db(hashtag, change)
+        if 'comment' in change:
+            hashtag_matches = hashtag_match(change['comment'])
+            if hashtag_matches and valid_edit(change):
+                for hashtag in hashtag_matches:
+                    if 'id' not in change:
+                        print("Couldn't find recent changes ID in data. Skipping.")
+                        continue
+                    if db.is_duplicate(hashtag, change['id']):
+                        print("Skipped duplicate {hashtag} (rc_id = {id})".format(
+                            hashtag=hashtag, id=change['id']))
+                        continue
+                    if not valid_hashtag(hashtag):
+                        continue
+                    # Check edit_summary length, truncate if necessary
+                    if len(change['comment']) > 800:
+                        change['comment'] = change['comment'][:799]
+                    populate_media_information(change)
+                    db.insert_db(hashtag, change)
