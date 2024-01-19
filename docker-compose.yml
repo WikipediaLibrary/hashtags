@@ -26,11 +26,9 @@ services:
       - main
     restart: unless-stopped
     command: >
-      [
-        'mysqld',
-        '--character-set-server=utf8mb4',
-        '--collation-server=utf8mb4_unicode_ci'
-      ]
+        mysqld
+        --character-set-server=utf8mb4
+        --collation-server=utf8mb4_unicode_ci
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-phashtagserver"]
       timeout: 20s
