@@ -49,8 +49,12 @@ def hashtag_queryset(request_dict):
 
     if 'project' in request_dict:
         if request_dict['project']:
+            project = request_dict['project']
+            project = project[1:]
+            regex_query_string = '[a-z]+' + project
+
             queryset = queryset.filter(
-                domain=request_dict['project'])
+                domain__iregex=regex_query_string)
 
     if 'user' in request_dict:
         if request_dict['user']:
