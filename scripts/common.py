@@ -1,7 +1,7 @@
 import re
 
 # From https://github.com/hatnote/hashtag-search/blob/1e02506a732b3e018521c431c4b5c3f3c0618215/common.py
-EXCLUDED = ('redirect',
+EXCLUDED_LITERAL = ('redirect',
             'weiterleitung',
             'redirection',
             'ifexist',
@@ -12,7 +12,25 @@ EXCLUDED = ('redirect',
             'default',
             'mw',
             # Too many edits & easily trackable via tags on Commons
-            'flickr2commons')
+            'flickr2commons',
+            # T361675
+            'quickstatements',
+)
+
+EXCLUDED_RE = (
+        # T361675
+        "^temporary_batch_[0-9]{13}$",
+)
+
+
+# exclude tags based on pattern match
+def __not_excluded_re(hashtag):
+    for re in EXCLUDED_RE:
+        pattern = re.compile(re)
+        match = pattern.fullmatch(hashtag)
+        if match:
+            return False
+    return True
 
 
 def hashtag_match(comment):
@@ -30,11 +48,15 @@ def hashtag_match(comment):
 
 def valid_hashtag(hashtag):
 
-    not_excluded = hashtag.lower() not in EXCLUDED
+    if type(hashtag) is not str:
+        return False
+
+    not_excluded_literal = hashtag.lower() not in EXCLUDED_LITERAL
+    not_excluded_re = __not_excluded_re(hashtag.lower)
     not_only_numbers = not hashtag.isdigit()
     not_only_one_character = len(hashtag) > 1
 
-    return all([not_excluded, not_only_numbers, not_only_one_character])
+    return all([not_excluded, not_excluded_re, not_only_numbers, not_only_one_character])
 
 
 def valid_edit(change):
