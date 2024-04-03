@@ -19,18 +19,16 @@ EXCLUDED_LITERAL = ('redirect',
 
 EXCLUDED_RE = (
         # T361675
-        "^temporary_batch_[0-9]{13}$",
+        re.compile("^temporary_batch_[0-9]{13}$"),
 )
 
 
 # exclude tags based on pattern match
-def __not_excluded_re(hashtag):
-    for re in EXCLUDED_RE:
-        pattern = re.compile(re)
-        match = pattern.fullmatch(hashtag)
-        if match:
-            return False
-    return True
+def __excluded_re(hashtag):
+    for pattern in EXCLUDED_RE:
+        if pattern.fullmatch(hashtag):
+            return True
+    return False
 
 
 def hashtag_match(comment):
@@ -48,15 +46,28 @@ def hashtag_match(comment):
 
 def valid_hashtag(hashtag):
 
+    # not a string
     if type(hashtag) is not str:
         return False
 
-    not_excluded_literal = hashtag.lower() not in EXCLUDED_LITERAL
-    not_excluded_re = __not_excluded_re(hashtag.lower)
-    not_only_numbers = not hashtag.isdigit()
-    not_only_one_character = len(hashtag) > 1
+    # only numbers
+    if hashtag.isdigit():
+        return False
 
-    return all([not_excluded, not_excluded_re, not_only_numbers, not_only_one_character])
+    # too short
+    if len(hashtag) < 2:
+        return False
+
+    # exluded literal
+    if hashtag.lower() in EXCLUDED_LITERAL:
+        return False
+
+    # excluded pattern
+    if __excluded_re(hashtag.lower()):
+        return False
+
+    # Otherwise valid
+    return True
 
 
 def valid_edit(change):
