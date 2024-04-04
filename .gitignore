@@ -7,4 +7,3 @@ static
 coverage.xml
 .env
 docker-compose.override.yml
-backup
