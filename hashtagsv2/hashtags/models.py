@@ -25,7 +25,7 @@ class Hashtag(models.Model):
 
     # Recentchanges ID
     # (https://www.mediawiki.org/wiki/Manual:Recentchanges_table)
-    rc_id = models.PositiveIntegerField()
+    rc_id = models.PositiveIntegerField(db_index=True)
 
     # Revision ID (https://www.mediawiki.org/wiki/Manual:Revision_table)
     rev_id = models.PositiveIntegerField(null=True)
@@ -51,6 +51,7 @@ class Hashtag(models.Model):
         # Indexes we need for computing statistics.
         index_together = [
             ('hashtag', 'timestamp'),
+            ('hashtag', 'rc_id'),
             ('hashtag', 'rev_id'),
             ('hashtag', 'domain', 'page_title'),
             ('hashtag', 'username'),

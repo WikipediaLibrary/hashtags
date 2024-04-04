@@ -3,8 +3,10 @@ version: "2.1"
 volumes:
   mysql:
 services:
-  app:
+  migrate:
     build: .
+    entrypoint: python manage.py migrate
+    restart: on-failure
     networks:
       - main
     env_file:
@@ -12,6 +14,16 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - ./:/app
+  app:
+    build: .
+    networks:
+      - main
+    env_file:
+      - '.env'
+    depends_on:
+      - 'migrate'
     ports:
       - "8000:8000"
     volumes:
@@ -64,7 +76,7 @@ services:
     cap_add:
       - SYS_PTRACE
     depends_on:
-      - db
+      - app
 
 networks:
   main:
