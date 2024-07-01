@@ -6,3 +6,4 @@ static
 .coverage
 coverage.xml
 .env
+docker-compose.override.yml
