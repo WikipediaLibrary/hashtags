@@ -1,11 +1,13 @@
 ---
-version: "2.1"
 volumes:
   mysql:
 services:
   migrate:
-    build: .
-    entrypoint: python manage.py migrate
+    build:
+      context: .
+      target: django
+    command: ["python", "manage.py", "migrate"]
+    working_dir: /app
     restart: on-failure
     networks:
       - main
@@ -15,19 +17,62 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ./:/app
-  app:
-    build: .
+      - type: bind
+        source: ./
+        target: /app
+  collectstatic:
+    build:
+      context: .
+      target: django
+    command: ["python", "manage.py", "collectstatic", "--noinput"]
+    working_dir: /app
+    restart: on-failure
     networks:
       - main
     env_file:
       - '.env'
     depends_on:
-      - 'migrate'
+      - migrate
+    volumes:
+      - type: bind
+        source: ./
+        target: /app
+  app:
+    build:
+      context: .
+      target: app
+    networks:
+      - main
+    env_file:
+      - '.env'
+    depends_on:
+      - collectstatic
     ports:
       - "8000:8000"
+    command: ["gunicorn", "hashtagsv2.wsgi:application"]
+    working_dir: /app
     volumes:
-      - ./:/app
+      - type: bind
+        source: ./
+        target: /app
+  scripts:
+    build:
+      context: .
+      target: scripts
+    command: ["python", "collect_hashtags.py"]
+    restart: unless-stopped
+    networks:
+      - main
+    env_file:
+      - '.env'
+    cap_add:
+      - SYS_PTRACE
+    depends_on:
+      - app
+    volumes:
+      - type: bind
+        source: ./scripts
+        target: /scripts
   db:
     image: quay.io/wikipedialibrary/mariadb:10-updated
     env_file:
@@ -37,13 +82,9 @@ services:
     networks:
       - main
     restart: unless-stopped
-    command: >
-        mysqld
-        --character-set-server=utf8mb4
-        --collation-server=utf8mb4_unicode_ci
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-phashtagserver"]
-      timeout: 20s
+      timeout: 5s
       retries: 10
     volumes:
       - type: bind
@@ -53,6 +94,9 @@ services:
         source: mysql
         target: /var/lib/mysql
         volume: {}
+      - type: bind
+        source: ./db.cnf
+        target: /etc/mysql/conf.d/db.cnf
   nginx:
     image: quay.io/wikipedialibrary/nginx:latest-updated
     volumes:
@@ -64,19 +108,5 @@ services:
       - main
     depends_on:
       - app
-  scripts:
-    build:
-      context: .
-      dockerfile: 'Dockerfile-scripts'
-    restart: unless-stopped
-    networks:
-      - main
-    env_file:
-      - '.env'
-    cap_add:
-      - SYS_PTRACE
-    depends_on:
-      - app
-
 networks:
   main:
