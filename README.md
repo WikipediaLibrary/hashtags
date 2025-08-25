@@ -19,39 +19,38 @@ Wikidata is currently excluded too, for similar reasons. A huge number of automa
 
 This tool is also running on a Horizon VPS instance, rather than Toolforge, to ensure it has the database resources it needs and doesn't disrupt other tools.
 
-## Setup
+# Local development
 
-To set the tool up for local development, you will need:
 
-* [Docker](https://www.docker.com)
-* [Docker Compose](https://docs.docker.com/compose/install)
+Contributions to the tool are welcomed! A list of open tasks can be found on the tool's [Phabricator workboard](https://phabricator.wikimedia.org/project/view/3229/)
 
-If you are installing Docker on Mac or Windows, Docker Compose is likely already included in your install.
 
-After cloning the repository, copy `template.env` to `.env` and start the tool by running:
+The tool uses the [Django framework](https://www.djangoproject.com/) and is deployed via [Docker](https://www.docker.com/). Docker and docker compose are required for local setup.
 
-```
-docker-compose up --build
-```
-
-The `-d` option will allow you to run in detached mode.
+After cloning the repository to your directory of choice:
+1. Copy `template.env` to `.env`. No further changes are required for local development.
+2. Run `docker compose up -d --build` to build and run containers in detached mode. If you want to enable the [Django Debug Toolbar](https://django-debug-toolbar.readthedocs.io/en/latest/index.html), you should run `docker compose build --build-arg REQUIREMENTS_FILE=local.txt && docker compose up`
 
 You should now be able to access the tool in your browser on `http://localhost`.
 
-When the tool is first run the scripts container will fail because migrations haven't finished running yet. There are solutions to this that <a href="https://phabricator.wikimedia.org/T207277">will be implemented eventually</a>.
+## Running tests
 
-To fix this problem, simply restart the container with:
+The tests can be run within the container using docker exec. The following command will run the test suite:
 
+```bash
+docker compose exec app python manage.py test
 ```
-docker start hashtags_scripts_1
+
+If you would like to generate a coverage report as well, you can invoke the test runner using `coverage run` instead:
+
+```bash
+docker compose exec app coverage run manage.py test
 ```
 
-An old error message may be printed if you're not running in detached mode, but the container should start successfully.
+You can view this report in your browser (located at `htmlcov/index.html`) by running the following command:
 
-Run tests with:
-
-```
-docker exec -it hashtags_app_1 python manage.py test
+```bash
+docker compose exec app coverage html
 ```
 
 ## Debugging
@@ -63,7 +62,7 @@ This is helpful in case the script appears to be stuck so we can determine what 
 Open a privileged shell in the scripts container:
 
 ```
-docker exec --privileged  -ti hashtags_scripts_1 bash
+docker compose exec --privileged scripts bash
 ```
 
 The next steps should all be run in that terminal, inside the container.
@@ -71,27 +70,27 @@ The next steps should all be run in that terminal, inside the container.
 Install gdb and a text editor of your choosing with:
 
 ```
-apt update && apt install gdb nano
+apt update && apt install -y gdb vim
 ```
 
 Download the source code for the Python version used in the scripts:
 
 ```
-wget https://www.python.org/ftp/python/3.5.2/Python-3.5.2.tgz -O - | tar -xzvf -
+wget https://www.python.org/ftp/python/3.11.13/Python-3.11.13.tgz -O - | tar -xzvf -
 ```
 
-The version (3.5.2, in this case) should match the one in the `Dockerfile-scripts` file in this repository.
+The version (3.11.13, in this case) should match the one in the `Dockerfile-scripts` file in this repository.
 
 Now, copy the Python gdb library to a suitable place where gdb can find it:
 
 ```
-cp Python-3.5.2/Tools/gdb/libpython.py /usr/local/bin/python3.5-gdb.py
+cp Python-3.11.13/Tools/gdb/libpython.py /usr/local/bin/python3.11-gdb.py
 ```
 
 Edit `/root/.gdbinit` so it looks like this:
 
 ```
-add-auto-load-safe-path /usr/local/bin/python3.5-gdb.py
+add-auto-load-safe-path /usr/local/bin/python3.11-gdb.py
 set auto-load python-scripts on
 ```
 

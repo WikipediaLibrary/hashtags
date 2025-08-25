@@ -1,0 +1,2 @@
+-r django.txt
+django-debug-toolbar==4.3.0
