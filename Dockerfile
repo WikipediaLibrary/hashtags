@@ -17,6 +17,9 @@ WORKDIR /app
 FROM django AS app
 RUN pip install gunicorn
 
+FROM django AS cron
+RUN apt update && apt install -y cron && rm -rf /var/lib/apt/lists/* && rm -f /var/log/apt/*
+
 FROM base AS scripts
 ENV PATH=/scripts:$PATH
 RUN pip install -r scripts.txt

@@ -7,3 +7,5 @@ static
 coverage.xml
 .env
 docker-compose.override.yml
+# artifact from a docker-compose bind mount
+scripts/wait_for_db.py

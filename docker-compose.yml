@@ -10,8 +10,6 @@ services:
     working_dir: /app
     restart: on-failure
     cpus: 0.25
-    networks:
-      - main
     env_file:
       - '.env'
     depends_on:
@@ -29,8 +27,6 @@ services:
     working_dir: /app
     restart: on-failure
     cpus: 0.25
-    networks:
-      - main
     env_file:
       - '.env'
     depends_on:
@@ -44,8 +40,6 @@ services:
     build:
       context: .
       target: app
-    networks:
-      - main
     env_file:
       - '.env'
     depends_on:
@@ -62,6 +56,27 @@ services:
       - type: bind
         source: ./
         target: /app
+  crons:
+    build:
+      context: .
+      target: cron
+    env_file:
+      - ".env"
+    depends_on:
+      - db
+    command: ["/app/crons/cron.sh"]
+    volumes:
+      - type: bind
+        source: ./
+        target: /app
+      - type: bind
+        source: ${HOST_BACKUP_DIR}
+        target: /app/backup
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.25"
+          memory: "384M"
   scripts:
     build:
       context: .
@@ -70,8 +85,6 @@ services:
     restart: unless-stopped
     cpus: 0.25
     mem_limit: 64M
-    networks:
-      - main
     env_file:
       - '.env'
     cap_add:
@@ -89,10 +102,6 @@ services:
     image: quay.io/wikipedialibrary/mariadb:10-updated
     env_file:
       - '.env'
-    ports:
-      - "3306:3306"
-    networks:
-      - main
     restart: unless-stopped
     cpus: 0.5
     mem_limit: 1G
@@ -103,9 +112,6 @@ services:
       timeout: 5s
       retries: 3
     volumes:
-      - type: bind
-        source: /usr/local/backup
-        target: /backup
       - type: volume
         source: mysql
         target: /var/lib/mysql
@@ -131,9 +137,5 @@ services:
         target: /app/static
     ports:
       - "80:80"
-    networks:
-      - main
     depends_on:
       - app
-networks:
-  main:
