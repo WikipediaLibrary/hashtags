@@ -1,0 +1,9 @@
+[mysqld]
+collation-server = utf8mb4_unicode_ci
+init-connect = SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci
+character-set-server = utf8mb4
+max_allowed_packet=1024M
+connect_timeout = 1200
+net_read_timeout = 180
+innodb_buffer_pool_size = 512M
+

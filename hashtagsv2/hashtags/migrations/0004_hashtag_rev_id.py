@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('hashtags', '0003_auto_20180919_1533'),
+        ("hashtags", "0003_auto_20180919_1533"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='hashtag',
-            name='rev_id',
+            model_name="hashtag",
+            name="rev_id",
             field=models.PositiveIntegerField(null=True),
         ),
     ]

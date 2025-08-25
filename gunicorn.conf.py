@@ -1,0 +1,9 @@
+name = "hashtagsv2_django"
+bind = "0.0.0.0:8000"
+worker_class = "gthread"
+workers = 7
+threads = 1
+timeout = 60
+backlog = 2048
+log_level = "info"
+reload = True

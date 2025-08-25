@@ -1,0 +1,8 @@
+---
+services:
+  db:
+    # use local backup dir instead of production dir
+    volumes:
+      - type: bind
+        source: ./backup
+        target: /backup

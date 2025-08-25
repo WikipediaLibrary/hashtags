@@ -24,7 +24,7 @@ class HomepageTest(TestCase):
         Test that the Hashtags homepage loads successfully
         when there is no data in the database.
         """
-        url = reverse('index')
+        url = reverse("index")
         factory = RequestFactory()
 
         request = factory.get(url)
@@ -37,33 +37,32 @@ class HashtagSearchTest(TestCase):
     @classmethod
     def setUp(cls):
         # Create two sets of 5 hashtag entries
-        for hashtag_text in ['hashtag1', 'hashtag2']:
+        for hashtag_text in ["hashtag1", "hashtag2"]:
             for i in range(5):
                 _ = HashtagFactory(hashtag=hashtag_text)
 
         cls.project_hashtag = HashtagFactory(
-            hashtag='hashtag3',
-            domain='fr.wikipedia.org')
-
-        cls.date_hashtag = HashtagFactory(
-            hashtag='hashtag4',
-            domain='ja.wikipedia.org',
-            timestamp=datetime(2017,6,1))
-
-        cls.user_hashtag = HashtagFactory(
-            hashtag='hashtag5',
-            domain='en.wikipedia.org',
-            username='xyz'
+            hashtag="hashtag3", domain="fr.wikipedia.org"
         )
 
-        cls.message_patcher = patch('hashtagsv2.hashtags.views.messages.add_message')
+        cls.date_hashtag = HashtagFactory(
+            hashtag="hashtag4",
+            domain="ja.wikipedia.org",
+            timestamp=datetime(2017, 6, 1),
+        )
+
+        cls.user_hashtag = HashtagFactory(
+            hashtag="hashtag5", domain="en.wikipedia.org", username="xyz"
+        )
+
+        cls.message_patcher = patch("hashtagsv2.hashtags.views.messages.add_message")
         cls.message_patcher.start()
 
     @classmethod
     def setUpClass(cls):
         super(HashtagSearchTest, cls).setUpClass()
-        cls.url = reverse('index')
-        cls.download_url = reverse('csv_download')
+        cls.url = reverse("index")
+        cls.download_url = reverse("csv_download")
 
     def tearDown(self):
         super(HashtagSearchTest, self).tearDown()
@@ -74,7 +73,7 @@ class HashtagSearchTest(TestCase):
         Test that split_hashtags method gives correct results
         """
         input_string = "hashtag1, hashtag2"
-        expected_list = ['hashtag1', 'hashtag2']
+        expected_list = ["hashtag1", "hashtag2"]
         ans_list = split_hashtags(input_string)
         self.assertEqual(expected_list, ans_list)
 
@@ -83,7 +82,7 @@ class HashtagSearchTest(TestCase):
         Test that split_hashtags method gives correct results when hashtags contains octothorpe.
         """
         input_string = "#hashtag1, #hashtag2"
-        expected_list = ['hashtag1', 'hashtag2']
+        expected_list = ["hashtag1", "hashtag2"]
         ans_list = split_hashtags(input_string)
         self.assertEqual(expected_list, ans_list)
 
@@ -93,9 +92,7 @@ class HashtagSearchTest(TestCase):
         """
         factory = RequestFactory()
 
-        data = {
-            'query': 'hashtag1'
-        }
+        data = {"query": "hashtag1"}
 
         request = factory.get(self.url, data)
         response = views.Index.as_view()(request)
@@ -109,14 +106,12 @@ class HashtagSearchTest(TestCase):
         """
         factory = RequestFactory()
 
-        data = {
-            'query': 'hashtag1'
-        }
+        data = {"query": "hashtag1"}
 
         request = factory.get(self.url, data)
         response = views.Index.as_view()(request)
 
-        object_list = response.context_data['object_list']
+        object_list = response.context_data["object_list"]
 
         self.assertEqual(len(object_list), 5)
 
@@ -127,15 +122,12 @@ class HashtagSearchTest(TestCase):
         """
         factory = RequestFactory()
 
-        data = {
-            'query': 'hashtag3',
-            'project': 'fr.wikipedia.org'
-        }
+        data = {"query": "hashtag3", "project": "fr.wikipedia.org"}
 
         request = factory.get(self.url, data)
         response = views.Index.as_view()(request)
 
-        object_list = response.context_data['object_list']
+        object_list = response.context_data["object_list"]
 
         # We only get one result
         self.assertEqual(len(object_list), 1)
@@ -150,16 +142,16 @@ class HashtagSearchTest(TestCase):
         factory = RequestFactory()
 
         data = {
-            'query': 'hashtag4',
-            'project': 'ja.wikipedia.org',
-            'startdate': '2017-01-01',
-            'enddate': '2018-01-01'
+            "query": "hashtag4",
+            "project": "ja.wikipedia.org",
+            "startdate": "2017-01-01",
+            "enddate": "2018-01-01",
         }
 
         request = factory.get(self.url, data)
         response = views.Index.as_view()(request)
 
-        object_list = response.context_data['object_list']
+        object_list = response.context_data["object_list"]
 
         # We only get one result
         self.assertEqual(len(object_list), 1)
@@ -173,14 +165,12 @@ class HashtagSearchTest(TestCase):
         """
         factory = RequestFactory()
 
-        data = {
-            'query': '#hashtag4'
-        }
+        data = {"query": "#hashtag4"}
 
         request = factory.get(self.url, data)
         response = views.Index.as_view()(request)
 
-        object_list = response.context_data['object_list']
+        object_list = response.context_data["object_list"]
 
         # We only get one result
         self.assertEqual(len(object_list), 1)
@@ -195,13 +185,13 @@ class HashtagSearchTest(TestCase):
         factory = RequestFactory()
 
         data = {
-            'query': 'hashtag4, hashtag3',
+            "query": "hashtag4, hashtag3",
         }
 
         request = factory.get(self.url, data)
         response = views.Index.as_view()(request)
 
-        object_list = response.context_data['object_list']
+        object_list = response.context_data["object_list"]
 
         # We get two results
         self.assertEqual(len(object_list), 2)
@@ -216,9 +206,7 @@ class HashtagSearchTest(TestCase):
         """
         factory = RequestFactory()
 
-        data = {
-            'query': 'hashtag1'
-        }
+        data = {"query": "hashtag1"}
 
         request = factory.get(self.url, data)
         response = views.Index.as_view()(request)
@@ -228,7 +216,7 @@ class HashtagSearchTest(TestCase):
         # top of the page, 1 for the table header, and 5 entries.
         # This is a crappy way to test the page content but it works
         # for now.
-        self.assertEqual(page_content.decode().count('<tr>'), 10)
+        self.assertEqual(page_content.decode().count("<tr>"), 10)
 
     def test_hashtags_download_csv(self):
         """
@@ -236,9 +224,7 @@ class HashtagSearchTest(TestCase):
         """
         factory = RequestFactory()
 
-        data = {
-            'query': 'hashtag1'
-        }
+        data = {"query": "hashtag1"}
 
         request = factory.get(self.download_url, data)
         response = views.csv_download(request)
@@ -256,10 +242,10 @@ class HashtagSearchTest(TestCase):
         factory = RequestFactory()
 
         data = {
-            'query': 'hashtag4',
-            'project': 'ja.wikipedia.org',
-            'startdate': '2017-01-01',
-            'enddate': '2018-01-01'
+            "query": "hashtag4",
+            "project": "ja.wikipedia.org",
+            "startdate": "2017-01-01",
+            "enddate": "2018-01-01",
         }
 
         request = factory.get(self.download_url, data)
@@ -277,15 +263,13 @@ class HashtagSearchTest(TestCase):
         """
         factory = RequestFactory()
 
-        data = {
-            'query': 'hashtag1'
-        }
+        data = {"query": "hashtag1"}
 
         request = factory.get(self.download_url, data)
         response = views.json_download(request)
 
-        #decode and transform response back to JSON
-        page_content = response.content.decode('utf-8')
+        # decode and transform response back to JSON
+        page_content = response.content.decode("utf-8")
         json_content = loads(page_content)
 
         # JSON should contain 5 rows. Not sure though if this test
@@ -299,17 +283,17 @@ class HashtagSearchTest(TestCase):
         factory = RequestFactory()
 
         data = {
-            'query': 'hashtag4',
-            'project': 'ja.wikipedia.org',
-            'startdate': '2017-01-01',
-            'enddate': '2018-01-01'
+            "query": "hashtag4",
+            "project": "ja.wikipedia.org",
+            "startdate": "2017-01-01",
+            "enddate": "2018-01-01",
         }
 
         request = factory.get(self.download_url, data)
         response = views.json_download(request)
 
-        #decode and transform response back to JSON
-        page_content = response.content.decode('utf-8')
+        # decode and transform response back to JSON
+        page_content = response.content.decode("utf-8")
         json_content = loads(page_content)
 
         # JSON should contain 1 row. Not sure though if this test
@@ -340,14 +324,14 @@ class HashtagSearchTest(TestCase):
         factory = RequestFactory()
 
         data = {
-            'query': 'hashtag5',
-            'user': 'xyz',
+            "query": "hashtag5",
+            "user": "xyz",
         }
 
         request = factory.get(self.url, data)
         response = views.Index.as_view()(request)
 
-        object_list = response.context_data['object_list']
+        object_list = response.context_data["object_list"]
 
         # We only get one result
         self.assertEqual(len(object_list), 1)
@@ -359,19 +343,30 @@ class HashtagSearchTest(TestCase):
         Test that we get the correct object list when search_type
         'and' is provided by user
         """
-        HashtagFactory(hashtag='hashtag_and_1', timestamp=datetime(2016,1,3), username='xyz', page_title='test', edit_summary='test_summary', rc_id=1234)
-        HashtagFactory(hashtag='hashtag_and_2', timestamp=datetime(2016,1,3), username='xyz', page_title='test', edit_summary='test_summary', rc_id=1234)
+        HashtagFactory(
+            hashtag="hashtag_and_1",
+            timestamp=datetime(2016, 1, 3),
+            username="xyz",
+            page_title="test",
+            edit_summary="test_summary",
+            rc_id=1234,
+        )
+        HashtagFactory(
+            hashtag="hashtag_and_2",
+            timestamp=datetime(2016, 1, 3),
+            username="xyz",
+            page_title="test",
+            edit_summary="test_summary",
+            rc_id=1234,
+        )
 
         factory = RequestFactory()
 
-        data = {
-            'query': 'hashtag_and_1, hashtag_and_2',
-            'search_type': 'and'
-        }
+        data = {"query": "hashtag_and_1, hashtag_and_2", "search_type": "and"}
         request = factory.get(self.url, data)
         response = views.Index.as_view()(request)
 
-        object_list = response.context_data['object_list']
+        object_list = response.context_data["object_list"]
 
         # We get one result
         self.assertEqual(len(object_list), 1)
@@ -382,16 +377,16 @@ class HashtagSearchTest(TestCase):
         """
         Test that we can filter by edits that introduce images.
         """
-        HashtagFactory(hashtag='hashtag1', has_image=True, rc_id=1234)
+        HashtagFactory(hashtag="hashtag1", has_image=True, rc_id=1234)
 
         factory = RequestFactory()
         data = {
-            'query': 'hashtag1',
-            'image': 'on',
+            "query": "hashtag1",
+            "image": "on",
         }
         request = factory.get(self.url, data)
         response = views.Index.as_view()(request)
-        object_list = response.context_data['object_list']
+        object_list = response.context_data["object_list"]
 
         # We get one result
         self.assertEqual(len(object_list), 1)
@@ -402,37 +397,36 @@ class HashtagSearchTest(TestCase):
         """
         Same as above, for video.
         """
-        HashtagFactory(hashtag='hashtag1', has_video=True, rc_id=1234)
+        HashtagFactory(hashtag="hashtag1", has_video=True, rc_id=1234)
 
         factory = RequestFactory()
         data = {
-            'query': 'hashtag1',
-            'video': 'on',
+            "query": "hashtag1",
+            "video": "on",
         }
         request = factory.get(self.url, data)
         response = views.Index.as_view()(request)
-        object_list = response.context_data['object_list']
+        object_list = response.context_data["object_list"]
 
         # We get one result
         self.assertEqual(len(object_list), 1)
         # And it is the correct edit
         self.assertEqual(object_list[0].rc_id, 1234)
 
-
     def test_audio_filter(self):
         """
         Same as above, for audio.
         """
-        HashtagFactory(hashtag='hashtag1', has_audio=True, rc_id=1234)
+        HashtagFactory(hashtag="hashtag1", has_audio=True, rc_id=1234)
 
         factory = RequestFactory()
         data = {
-            'query': 'hashtag1',
-            'audio': 'on',
+            "query": "hashtag1",
+            "audio": "on",
         }
         request = factory.get(self.url, data)
         response = views.Index.as_view()(request)
-        object_list = response.context_data['object_list']
+        object_list = response.context_data["object_list"]
 
         # We get one result
         self.assertEqual(len(object_list), 1)

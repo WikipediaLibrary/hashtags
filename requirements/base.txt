@@ -1,0 +1,2 @@
+mysql-connector-python==9.4.0
+sseclient==0.0.27

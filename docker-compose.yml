@@ -1,82 +1,141 @@
 ---
-version: "2.1"
 volumes:
   mysql:
 services:
   migrate:
-    build: .
-    entrypoint: python manage.py migrate
+    build:
+      context: .
+      target: django
+    command: ["python", "manage.py", "migrate"]
+    working_dir: /app
     restart: on-failure
-    networks:
-      - main
+    cpus: 0.25
     env_file:
       - '.env'
     depends_on:
       db:
         condition: service_healthy
     volumes:
-      - ./:/app
-  app:
-    build: .
-    networks:
-      - main
+      - type: bind
+        source: ./
+        target: /app
+  collectstatic:
+    build:
+      context: .
+      target: django
+    command: ["python", "manage.py", "collectstatic", "--noinput"]
+    working_dir: /app
+    restart: on-failure
+    cpus: 0.25
     env_file:
       - '.env'
     depends_on:
-      - 'migrate'
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./:/app
-  db:
-    image: quay.io/wikipedialibrary/mariadb:10-updated
-    env_file:
-      - '.env'
-    ports:
-      - "3306:3306"
-    networks:
-      - main
-    restart: unless-stopped
-    command: >
-        mysqld
-        --character-set-server=utf8mb4
-        --collation-server=utf8mb4_unicode_ci
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-phashtagserver"]
-      timeout: 20s
-      retries: 10
+      db:
+        condition: service_healthy
     volumes:
       - type: bind
-        source: /usr/local/backup
-        target: /backup
-      - type: volume
-        source: mysql
-        target: /var/lib/mysql
-        volume: {}
-  nginx:
-    image: quay.io/wikipedialibrary/nginx:latest-updated
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./static:/app/static
-    ports:
-      - "80:80"
-    networks:
-      - main
+        source: ./
+        target: /app
+  app:
+    build:
+      context: .
+      target: app
+    env_file:
+      - '.env'
     depends_on:
-      - app
+      - collectstatic
+      - migrate
+    ports:
+      - "8000:8000"
+    command: ["gunicorn", "hashtagsv2.wsgi:application"]
+    working_dir: /app
+    restart: unless-stopped
+    cpus: 0.25
+    mem_limit: 512M
+    volumes:
+      - type: bind
+        source: ./
+        target: /app
+  crons:
+    build:
+      context: .
+      target: cron
+    env_file:
+      - ".env"
+    depends_on:
+      - db
+    command: ["/app/crons/cron.sh"]
+    volumes:
+      - type: bind
+        source: ./
+        target: /app
+      - type: bind
+        source: ${HOST_BACKUP_DIR}
+        target: /app/backup
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.25"
+          memory: "384M"
   scripts:
     build:
       context: .
-      dockerfile: 'Dockerfile-scripts'
+      target: scripts
+    command: ["python", "collect_hashtags.py"]
     restart: unless-stopped
-    networks:
-      - main
+    cpus: 0.25
+    mem_limit: 64M
     env_file:
       - '.env'
     cap_add:
       - SYS_PTRACE
     depends_on:
+      - migrate
+    volumes:
+      - type: bind
+        source: ./scripts
+        target: /scripts
+      - type: bind
+        source: ./wait_for_db.py
+        target: /scripts/wait_for_db.py
+  db:
+    image: quay.io/wikipedialibrary/mariadb:10-updated
+    env_file:
+      - '.env'
+    restart: unless-stopped
+    cpus: 0.5
+    mem_limit: 1G
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - type: volume
+        source: mysql
+        target: /var/lib/mysql
+        volume: {}
+      - type: bind
+        source: ./db.cnf
+        target: /etc/mysql/conf.d/db.cnf
+  nginx:
+    image: quay.io/wikipedialibrary/nginx:latest-updated
+    restart: unless-stopped
+    mem_limit: 32M
+    volumes:
+      - type: volume
+        target: /var/lib/nginx/cache
+      - type: bind
+        source: ./nginx.conf
+        target: /etc/nginx/conf.d/default.conf
+      - type: bind
+        source: ./robots.txt
+        target: /app/robots.txt
+      - type: bind
+        source: ./static
+        target: /app/static
+    ports:
+      - "80:80"
+    depends_on:
       - app
-
-networks:
-  main:

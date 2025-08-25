@@ -6,17 +6,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('hashtags', '0010_auto_20210723_1826'),
+        ("hashtags", "0010_auto_20210723_1826"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='hashtag',
-            name='rc_id',
+            model_name="hashtag",
+            name="rc_id",
             field=models.PositiveIntegerField(db_index=True),
         ),
         migrations.AlterIndexTogether(
-            name='hashtag',
-            index_together={('hashtag', 'domain', 'page_title'), ('hashtag', 'rc_id'), ('hashtag', 'username'), ('hashtag', 'timestamp'), ('hashtag', 'rev_id')},
+            name="hashtag",
+            index_together={
+                ("hashtag", "domain", "page_title"),
+                ("hashtag", "rc_id"),
+                ("hashtag", "username"),
+                ("hashtag", "timestamp"),
+                ("hashtag", "rev_id"),
+            },
         ),
     ]
