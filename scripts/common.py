@@ -1,25 +1,26 @@
 import re
 
 # From https://github.com/hatnote/hashtag-search/blob/1e02506a732b3e018521c431c4b5c3f3c0618215/common.py
-EXCLUDED_LITERAL = ('redirect',
-            'weiterleitung',
-            'redirection',
-            'ifexist',
-            'switch',
-            'ifexpr',
-            'if',
-            'rs',
-            'default',
-            'mw',
-            # Too many edits & easily trackable via tags on Commons
-            'flickr2commons',
-            # T361675
-            'quickstatements',
+EXCLUDED_LITERAL = (
+    "redirect",
+    "weiterleitung",
+    "redirection",
+    "ifexist",
+    "switch",
+    "ifexpr",
+    "if",
+    "rs",
+    "default",
+    "mw",
+    # Too many edits & easily trackable via tags on Commons
+    "flickr2commons",
+    # T361675
+    "quickstatements",
 )
 
 EXCLUDED_RE = (
-        # T361675
-        re.compile("^temporary_batch_[0-9]{13}$"),
+    # T361675
+    re.compile("^temporary_batch_[0-9]{13}$"),
 )
 
 
@@ -73,9 +74,9 @@ def valid_hashtag(hashtag):
 def valid_edit(change):
 
     # Exclude Wikidata for now, just far too much data
-    project_match = change['meta']['domain'] != "www.wikidata.org"
+    project_match = change["meta"]["domain"] != "www.wikidata.org"
 
     # Excluding bots, mostly because of IABot. Lots of data, not very useful.
-    not_bot = not change['bot']
+    not_bot = not change["bot"]
 
     return all([project_match, not_bot])

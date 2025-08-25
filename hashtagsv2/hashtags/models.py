@@ -7,6 +7,7 @@ class Hashtag(models.Model):
     We should always be gathering every piece of the model - edit summary
     is optional, but we shouldn't be logging anything with no summary.
     """
+
     hashtag = models.CharField(max_length=128, db_index=True)
 
     # Hashtags v1 only recorded language Wikipedia project. Recording
@@ -42,17 +43,25 @@ class Hashtag(models.Model):
         # to access the 'values_list' for an individual object, such as
         # when testing
         return Hashtag.objects.filter(pk=self.pk).values_list(
-            'domain', 'timestamp', 'username', 'page_title', 'edit_summary',
-            'rc_id', 'rev_id', 'has_image', 'has_video', 'has_audio',
-            named=True
+            "domain",
+            "timestamp",
+            "username",
+            "page_title",
+            "edit_summary",
+            "rc_id",
+            "rev_id",
+            "has_image",
+            "has_video",
+            "has_audio",
+            named=True,
         )[0]
 
     class Meta:
         # Indexes we need for computing statistics.
         index_together = [
-            ('hashtag', 'timestamp'),
-            ('hashtag', 'rc_id'),
-            ('hashtag', 'rev_id'),
-            ('hashtag', 'domain', 'page_title'),
-            ('hashtag', 'username'),
+            ("hashtag", "timestamp"),
+            ("hashtag", "rc_id"),
+            ("hashtag", "rev_id"),
+            ("hashtag", "domain", "page_title"),
+            ("hashtag", "username"),
         ]

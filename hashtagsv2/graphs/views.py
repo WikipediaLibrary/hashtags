@@ -14,8 +14,13 @@ from django.views.generic import FormView, ListView, View
 from django.shortcuts import render
 
 from hashtagsv2.hashtags.forms import SearchForm
-from hashtagsv2.hashtags.helpers import hashtag_queryset, get_hashtags_context, results_count
+from hashtagsv2.hashtags.helpers import (
+    hashtag_queryset,
+    get_hashtags_context,
+    results_count,
+)
 from hashtagsv2.hashtags.models import Hashtag
+
 
 def top_project_statistics_data(request):
     # Returns top 10 projects in decreasing order of number of edits.
@@ -26,16 +31,14 @@ def top_project_statistics_data(request):
     edits_per_project = []
 
     hashtags = hashtag_queryset(request_dict)
-    qs = results_count(hashtags, 'domain', '-edits')[:10]
+    qs = results_count(hashtags, "domain", "-edits")[:10]
     for item in qs:
-        projects.append(item['domain'])
-        edits_per_project.append(item['edits'])
+        projects.append(item["domain"])
+        edits_per_project.append(item["edits"])
 
-    data = {
-        'projects': projects,
-        'edits_per_project': edits_per_project
-    }
+    data = {"projects": projects, "edits_per_project": edits_per_project}
     return JsonResponse(data)
+
 
 def top_user_statistics_data(request):
     # Returns top 10 projects in decreasing order of number of edits.
@@ -45,16 +48,14 @@ def top_user_statistics_data(request):
     edits_per_user = []
 
     hashtags = hashtag_queryset(request_dict)
-    qs = results_count(hashtags, 'username', '-edits')[:10]
+    qs = results_count(hashtags, "username", "-edits")[:10]
     for item in qs:
-        usernames.append(item['username'])
-        edits_per_user.append(item['edits'])
+        usernames.append(item["username"])
+        edits_per_user.append(item["edits"])
 
-    data = {
-        'usernames': usernames,
-        'edits_per_user': edits_per_user
-    }
+    data = {"usernames": usernames, "edits_per_user": edits_per_user}
     return JsonResponse(data)
+
 
 def time_statistics_data(request):
     request_dict = request.GET.dict()
@@ -63,7 +64,7 @@ def time_statistics_data(request):
     time_array = []
 
     hashtags = hashtag_queryset(request_dict)
-    earliest_date = hashtags[len(hashtags)-1].timestamp.date()
+    earliest_date = hashtags[len(hashtags) - 1].timestamp.date()
     latest_date = hashtags.first().timestamp.date()
 
     date_range = latest_date - earliest_date
@@ -73,21 +74,26 @@ def time_statistics_data(request):
     number_of_days = date_range.days
     # if the request is to change the view_type
     if "view_type" in request_dict:
-        view_type = request_dict['view_type']
+        view_type = request_dict["view_type"]
         number_of_days = 9999
     else:
-        view_type = 'NOTA'
-    
+        view_type = "NOTA"
+
     # Split by days
-    if  number_of_days < 90 or view_type == 'dailyTimeChart':
-        view_type = 'dailyTimeChart'
-        qs = hashtags.annotate(day = TruncDay('timestamp')).values('day').annotate(edits = Count('rc_id')).order_by()
-        
+    if number_of_days < 90 or view_type == "dailyTimeChart":
+        view_type = "dailyTimeChart"
+        qs = (
+            hashtags.annotate(day=TruncDay("timestamp"))
+            .values("day")
+            .annotate(edits=Count("rc_id"))
+            .order_by()
+        )
+
         for item in qs:
-            time_dic[item['day'].date()] = item['edits']
+            time_dic[item["day"].date()] = item["edits"]
         while earliest_date <= latest_date:
             time_array.append(earliest_date.strftime("%Y-%m-%d"))
-            #If there are edits on a day, append number of edits else append 0
+            # If there are edits on a day, append number of edits else append 0
             if earliest_date in time_dic:
                 temp = time_dic.pop(earliest_date)
                 edits_array.append(temp)
@@ -95,12 +101,21 @@ def time_statistics_data(request):
                 edits_array.append(0)
             earliest_date = earliest_date + timedelta(days=1)
     # Split by months
-    elif number_of_days >=90 and number_of_days <1095 or view_type == 'monthlyTimeChart':
-        view_type = 'monthlyTimeChart'
-        qs = hashtags.annotate(month = TruncMonth('timestamp')).values('month').annotate(edits = Count('rc_id')).order_by()
+    elif (
+        number_of_days >= 90
+        and number_of_days < 1095
+        or view_type == "monthlyTimeChart"
+    ):
+        view_type = "monthlyTimeChart"
+        qs = (
+            hashtags.annotate(month=TruncMonth("timestamp"))
+            .values("month")
+            .annotate(edits=Count("rc_id"))
+            .order_by()
+        )
         for item in qs:
-            time_dic[item['month'].date()] = item['edits']
-        
+            time_dic[item["month"].date()] = item["edits"]
+
         earliest_date = earliest_date.replace(day=1)
         latest_date = latest_date.replace(day=1)
         while earliest_date <= latest_date:
@@ -110,16 +125,21 @@ def time_statistics_data(request):
                 edits_array.append(temp)
             else:
                 edits_array.append(0)
-            earliest_date = earliest_date + relativedelta(months= +1)
+            earliest_date = earliest_date + relativedelta(months=+1)
     # Split by years
     else:
-        view_type = 'yearlyTimeChart'
-        qs = hashtags.annotate(year = TruncYear('timestamp')).values('year').annotate(edits = Count('rc_id')).order_by()       
+        view_type = "yearlyTimeChart"
+        qs = (
+            hashtags.annotate(year=TruncYear("timestamp"))
+            .values("year")
+            .annotate(edits=Count("rc_id"))
+            .order_by()
+        )
         for item in qs:
-            time_dic[item['year'].date()] = item['edits']
-          
-        earliest_date = earliest_date.replace(day=1,month=1)
-        latest_date = latest_date.replace(day=1,month=1)
+            time_dic[item["year"].date()] = item["edits"]
+
+        earliest_date = earliest_date.replace(day=1, month=1)
+        latest_date = latest_date.replace(day=1, month=1)
         while earliest_date <= latest_date:
             time_array.append(earliest_date.strftime("%Y"))
             if earliest_date in time_dic:
@@ -127,30 +147,33 @@ def time_statistics_data(request):
                 edits_array.append(temp)
             else:
                 edits_array.append(0)
-            earliest_date = earliest_date + relativedelta(years= +1)
+            earliest_date = earliest_date + relativedelta(years=+1)
 
     data = {
-        'edits_array': edits_array,
-        'time_array': time_array,
-        'view_type' : view_type
+        "edits_array": edits_array,
+        "time_array": time_array,
+        "view_type": view_type,
     }
     return JsonResponse(data)
 
+
 class StatisticsView(View):
-    template_name = 'graphs/graph.html'
+    template_name = "graphs/graph.html"
     form_class = SearchForm
+
     def get(self, request):
         request_dict = request.GET.dict()
         hashtags = hashtag_queryset(request_dict)
-        context = {'form': self.form_class(request.GET)}
-        context['has_results'] = hashtags[:1].count()
-        if context['has_results']:
+        context = {"form": self.form_class(request.GET)}
+        context["has_results"] = hashtags[:1].count()
+        if context["has_results"]:
             context = get_hashtags_context(request, hashtags, context)
         return render(request, self.template_name, context=context)
 
+
 class All_users_view(ListView):
-    template_name = 'graphs/all_users.html'
-    context_object_name = 'users_list'
+    template_name = "graphs/all_users.html"
+    context_object_name = "users_list"
     paginate_by = 30
 
     def get_context_data(self, *args, **kwargs):
@@ -164,22 +187,23 @@ class All_users_view(ListView):
     def get_queryset(self):
         request_dict = self.request.GET.dict()
         hashtags = hashtag_queryset(request_dict)
-        users_qs = results_count(hashtags, 'username', 'username')
+        users_qs = results_count(hashtags, "username", "username")
         return users_qs
 
     def get_paginate_by(self, queryset):
         request_dict = self.request.GET.dict()
         hashtags = hashtag_queryset(request_dict)
-        users_count = hashtags.values('username').distinct().count()
+        users_count = hashtags.values("username").distinct().count()
         # Paginate such that there are atmost 10 pages
         if users_count > 300:
-            return math.ceil(users_count/10)
+            return math.ceil(users_count / 10)
         else:
             return 30
 
+
 class All_projects_view(ListView):
-    template_name = 'graphs/all_projects.html'
-    context_object_name = 'projects_list'
+    template_name = "graphs/all_projects.html"
+    context_object_name = "projects_list"
 
     def get_context_data(self, *args, **kwargs):
         context = super(All_projects_view, self).get_context_data(**kwargs)
@@ -192,66 +216,78 @@ class All_projects_view(ListView):
     def get_queryset(self):
         request_dict = self.request.GET.dict()
         hashtags = hashtag_queryset(request_dict)
-        projects_qs = results_count(hashtags, 'domain', '-edits')
+        projects_qs = results_count(hashtags, "domain", "-edits")
         return projects_qs
+
 
 def users_csv(request):
     request_dict = request.GET.dict()
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="hashtags_users.csv"'
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="hashtags_users.csv"'
 
     hashtags = hashtag_queryset(request_dict)
-    users_qs = results_count(hashtags, 'username', 'username')
+    users_qs = results_count(hashtags, "username", "username")
     writer = csv.writer(response)
-    writer.writerow([
-        # Translators: User of the hashtag
-        _('User'),
-        # Translators: Edits done on wikimedia projects.
-        _('Edits')])
+    writer.writerow(
+        [
+            # Translators: User of the hashtag
+            _("User"),
+            # Translators: Edits done on wikimedia projects.
+            _("Edits"),
+        ]
+    )
     for user in users_qs:
-        writer.writerow([user['username'], user['edits']])
+        writer.writerow([user["username"], user["edits"]])
     return response
+
 
 def projects_csv(request):
     request_dict = request.GET.dict()
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="hashtags_projects.csv"'
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="hashtags_projects.csv"'
 
     hashtags = hashtag_queryset(request_dict)
-    projects_qs = results_count(hashtags, 'domain', '-edits')
+    projects_qs = results_count(hashtags, "domain", "-edits")
     writer = csv.writer(response)
-    writer.writerow([
-        # Translators: Wikimedia projects
-        _('Project'),
-        # Translators: Edits done on wikimedia projects.
-        _('Edits')])
+    writer.writerow(
+        [
+            # Translators: Wikimedia projects
+            _("Project"),
+            # Translators: Edits done on wikimedia projects.
+            _("Edits"),
+        ]
+    )
     for project in projects_qs:
-        writer.writerow([project['domain'], project['edits']])
+        writer.writerow([project["domain"], project["edits"]])
     return response
+
 
 def time_csv(request):
     temp = time_statistics_data(request)
     temp = temp.content
     # converting byte str to str
-    temp = temp.decode('ASCII')
+    temp = temp.decode("ASCII")
     temp = json.loads(temp)
 
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="hashtags_dates.csv"'
-    
-    if temp['view_type'] == 'dailyTimeChart':
-    	header = 'Date'
-    elif temp['view_type'] == 'monthlyTimeChart':
-    	header = 'Month'
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="hashtags_dates.csv"'
+
+    if temp["view_type"] == "dailyTimeChart":
+        header = "Date"
+    elif temp["view_type"] == "monthlyTimeChart":
+        header = "Month"
     else:
-    	header = 'Year'
+        header = "Year"
     writer = csv.writer(response)
-    writer.writerow([
-        # Translators: Date on which edit is made.
-        _(header),
-        # Translators: Edits done on wikimedia projects.
-        _('Edits')])
-    for i,j in zip(temp['time_array'],temp['edits_array']):
-        writer.writerow([i,j])
-    
+    writer.writerow(
+        [
+            # Translators: Date on which edit is made.
+            _(header),
+            # Translators: Edits done on wikimedia projects.
+            _("Edits"),
+        ]
+    )
+    for i, j in zip(temp["time_array"], temp["edits_array"]):
+        writer.writerow([i, j])
+
     return response

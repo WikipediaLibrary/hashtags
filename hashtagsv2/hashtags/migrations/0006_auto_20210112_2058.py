@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('hashtags', '0005_auto_20200417_1019'),
+        ("hashtags", "0005_auto_20200417_1019"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='hashtag',
-            name='has_image',
+            model_name="hashtag",
+            name="has_image",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='hashtag',
-            name='has_video',
+            model_name="hashtag",
+            name="has_video",
             field=models.BooleanField(default=False),
         ),
     ]

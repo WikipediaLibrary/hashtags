@@ -7,22 +7,29 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Hashtag',
+            name="Hashtag",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('hashtag', models.CharField(max_length=128)),
-                ('domain', models.CharField(max_length=32)),
-                ('timestamp', models.DateTimeField()),
-                ('username', models.CharField(max_length=255)),
-                ('page_title', models.CharField(max_length=255)),
-                ('edit_summary', models.CharField(max_length=800)),
-                ('bot', models.BooleanField()),
-                ('diff_id', models.PositiveIntegerField()),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("hashtag", models.CharField(max_length=128)),
+                ("domain", models.CharField(max_length=32)),
+                ("timestamp", models.DateTimeField()),
+                ("username", models.CharField(max_length=255)),
+                ("page_title", models.CharField(max_length=255)),
+                ("edit_summary", models.CharField(max_length=800)),
+                ("bot", models.BooleanField()),
+                ("diff_id", models.PositiveIntegerField()),
             ],
         ),
     ]

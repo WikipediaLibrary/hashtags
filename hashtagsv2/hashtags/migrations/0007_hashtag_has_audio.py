@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('hashtags', '0006_auto_20210112_2058'),
+        ("hashtags", "0006_auto_20210112_2058"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='hashtag',
-            name='has_audio',
+            model_name="hashtag",
+            name="has_audio",
             field=models.BooleanField(default=False),
         ),
     ]

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('hashtags', '0008_auto_20210713_1303'),
+        ("hashtags", "0008_auto_20210713_1303"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='hashtag',
-            name='timestamp',
+            model_name="hashtag",
+            name="timestamp",
             field=models.DateTimeField(db_index=True),
         ),
     ]

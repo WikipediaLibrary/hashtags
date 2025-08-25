@@ -6,6 +6,7 @@ from filelock import FileLock
 import subprocess
 import os
 
+
 def backup(args):
     ## Dump and gzip DB
     date = datetime.today().strftime("%Y%m%d")
@@ -28,6 +29,7 @@ def backup(args):
     os.chmod(filename, 0o640)
 
     print("Finished backup.")
+
 
 def restore(args):
     file = args.src
@@ -62,6 +64,7 @@ def restore(args):
     ## Run any necessary DB operations.
     subprocess.run("python /app/manage.py migrate", shell=True, check=True)
     print("Finished restore.")
+
 
 def clean():
     # Retain backups for 14 days.

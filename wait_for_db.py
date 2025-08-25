@@ -26,7 +26,7 @@ def has_connection(timeout=1, attempt_every=10):
                 cursor.close()
             cnx.close()
         connected = True
-        print("Connected")
+        print("Connected.")
 
 
 has_connection()
@@ -38,5 +38,5 @@ try:
     os.execvp(prog, [prog] + args)
 except Exception as e:
     raise Exception(
-        "error running {prog} {args}:\n{e}".format(prog=prog, args=args, e=e)
+        "Error running {prog} {args}:\n{e}".format(prog=prog, args=args, e=e)
     )
