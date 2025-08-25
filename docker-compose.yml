@@ -50,8 +50,8 @@ services:
     command: ["gunicorn", "hashtagsv2.wsgi:application"]
     working_dir: /app
     restart: unless-stopped
-    cpus: 0.25
-    mem_limit: 512M
+    cpus: 0.5
+    mem_limit: 1G
     volumes:
       - type: bind
         source: ./
@@ -103,8 +103,8 @@ services:
     env_file:
       - '.env'
     restart: unless-stopped
-    cpus: 0.5
-    mem_limit: 1G
+    cpus: 1
+    mem_limit: 2G
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       start_period: 10s
