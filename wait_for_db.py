@@ -4,7 +4,7 @@ import time
 from mysql.connector import connect
 
 
-def has_connection(timeout=1, attempt_every=10):
+def has_connection(timeout=5, attempt_every=10):
     start_time = time.monotonic()
     connected = False
     wait = False
@@ -26,7 +26,7 @@ def has_connection(timeout=1, attempt_every=10):
                 cursor.close()
             cnx.close()
         connected = True
-        print("Connected.")
+        print("Connected to DB.")
 
 
 has_connection()
