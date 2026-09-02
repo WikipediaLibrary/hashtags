@@ -2,6 +2,8 @@ from datetime import datetime
 from mock import patch
 from json import loads
 
+import requests
+
 from django.urls import reverse
 from django.test import TestCase, RequestFactory
 
@@ -9,6 +11,17 @@ from .factories import HashtagFactory
 from .models import Hashtag
 from .helpers import split_hashtags
 from . import views
+
+
+def all_revisions_visible(domain, rev_ids):
+    """Stand in for the API, reporting every revision asked about as public."""
+    return {
+        "query": {
+            "pages": [
+                {"revisions": [{"revid": rev_id} for rev_id in rev_ids]},
+            ]
+        }
+    }
 
 
 class HomepageTest(TestCase):
@@ -58,6 +71,14 @@ class HashtagSearchTest(TestCase):
         cls.message_patcher = patch("hashtagsv2.hashtags.views.messages.add_message")
         cls.message_patcher.start()
 
+        # Results are checked against the wiki before they are displayed, so
+        # stop the tests from calling out to the API. See T277832.
+        cls.visibility_patcher = patch(
+            "hashtagsv2.hashtags.visibility._query_wiki",
+            side_effect=all_revisions_visible,
+        )
+        cls.visibility_patcher.start()
+
     @classmethod
     def setUpClass(cls):
         super(HashtagSearchTest, cls).setUpClass()
@@ -67,6 +88,7 @@ class HashtagSearchTest(TestCase):
     def tearDown(self):
         super(HashtagSearchTest, self).tearDown()
         self.message_patcher.stop()
+        self.visibility_patcher.stop()
 
     def test_split_hashtags1(self):
         """
@@ -343,6 +365,7 @@ class HashtagSearchTest(TestCase):
         Test that we get the correct object list when search_type
         'and' is provided by user
         """
+        # Two hashtags on one edit, so both rows share the edit's IDs.
         HashtagFactory(
             hashtag="hashtag_and_1",
             timestamp=datetime(2016, 1, 3),
@@ -350,6 +373,7 @@ class HashtagSearchTest(TestCase):
             page_title="test",
             edit_summary="test_summary",
             rc_id=1234,
+            rev_id=5678,
         )
         HashtagFactory(
             hashtag="hashtag_and_2",
@@ -358,6 +382,7 @@ class HashtagSearchTest(TestCase):
             page_title="test",
             edit_summary="test_summary",
             rc_id=1234,
+            rev_id=5678,
         )
 
         factory = RequestFactory()
@@ -432,3 +457,108 @@ class HashtagSearchTest(TestCase):
         self.assertEqual(len(object_list), 1)
         # And it is the correct edit
         self.assertEqual(object_list[0].rc_id, 1234)
+
+
+class RevisionVisibilityTest(TestCase):
+    """
+    The wiki can hide an edit summary or a username after we record it, so
+    results are checked before they are displayed. See T277832.
+    """
+
+    def setUp(self):
+        self.url = reverse("index")
+        self.factory = RequestFactory()
+        self.message_patcher = patch("hashtagsv2.hashtags.views.messages.add_message")
+        self.message_patcher.start()
+
+    def tearDown(self):
+        super(RevisionVisibilityTest, self).tearDown()
+        self.message_patcher.stop()
+
+    def _results(self, api_response):
+        """Search for one hashtag, with the API replaced by a fixed answer."""
+        with patch(
+            "hashtagsv2.hashtags.visibility._query_wiki", return_value=api_response
+        ):
+            request = self.factory.get(self.url, {"query": "hashtag1"})
+            response = views.Index.as_view()(request)
+            return response.context_data["object_list"]
+
+    def test_hidden_summary_removes_row(self):
+        HashtagFactory(hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org")
+        object_list = self._results(
+            {"query": {"pages": [{"revisions": [{"revid": 1, "commenthidden": True}]}]}}
+        )
+        self.assertEqual(len(object_list), 0)
+
+    def test_suppressed_revision_removes_row(self):
+        HashtagFactory(hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org")
+        object_list = self._results(
+            {"query": {"pages": [{"revisions": [{"revid": 1, "suppressed": True}]}]}}
+        )
+        self.assertEqual(len(object_list), 0)
+
+    def test_deleted_page_removes_row(self):
+        HashtagFactory(hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org")
+        object_list = self._results({"query": {"badrevids": {"1": {"revid": 1}}}})
+        self.assertEqual(len(object_list), 0)
+
+    def test_hidden_username_removes_row(self):
+        # We drop the row rather than blank the name, because the user search
+        # filter still matches on the stored username.
+        HashtagFactory(
+            hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org", username="xyz"
+        )
+        object_list = self._results(
+            {"query": {"pages": [{"revisions": [{"revid": 1, "userhidden": True}]}]}}
+        )
+        self.assertEqual(len(object_list), 0)
+
+    def test_api_error_response_removes_rows(self):
+        # MediaWiki reports some errors with HTTP 200 and an error object.
+        HashtagFactory(hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org")
+        object_list = self._results({"error": {"code": "badvalue"}})
+        self.assertEqual(len(object_list), 0)
+
+    def test_malformed_response_removes_rows(self):
+        HashtagFactory(hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org")
+        object_list = self._results({"query": {"pages": "not a list"}})
+        self.assertEqual(len(object_list), 0)
+
+    def test_visible_revision_is_shown(self):
+        HashtagFactory(
+            hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org", username="xyz"
+        )
+        object_list = self._results(
+            {"query": {"pages": [{"revisions": [{"revid": 1}]}]}}
+        )
+        self.assertEqual(len(object_list), 1)
+        self.assertEqual(object_list[0].username, "xyz")
+
+    def test_row_with_no_revision_id_is_removed(self):
+        # Log actions such as uploads have no revision ID, so we cannot check
+        # them and must not show them.
+        HashtagFactory(hashtag="hashtag1", rev_id=None, domain="en.wikipedia.org")
+        object_list = self._results({"query": {"pages": []}})
+        self.assertEqual(len(object_list), 0)
+
+    def test_api_failure_removes_rows(self):
+        HashtagFactory(hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org")
+        with patch(
+            "hashtagsv2.hashtags.visibility._query_wiki",
+            side_effect=requests.RequestException("boom"),
+        ):
+            request = self.factory.get(self.url, {"query": "hashtag1"})
+            response = views.Index.as_view()(request)
+            self.assertEqual(len(response.context_data["object_list"]), 0)
+
+    def test_time_budget_stops_further_api_calls(self):
+        # Results can span many wikis. We must stop before the gunicorn
+        # worker times out, and not show what we did not check.
+        HashtagFactory(hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org")
+        with patch("hashtagsv2.hashtags.visibility.API_TOTAL_BUDGET_S", -1):
+            with patch("hashtagsv2.hashtags.visibility._query_wiki") as query:
+                request = self.factory.get(self.url, {"query": "hashtag1"})
+                response = views.Index.as_view()(request)
+                self.assertEqual(len(response.context_data["object_list"]), 0)
+                query.assert_not_called()
