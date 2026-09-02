@@ -5,11 +5,13 @@ from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Count
 from django.views.generic import ListView, TemplateView
+from django.utils.cache import add_never_cache_headers
 from django.utils.translation import gettext as _
 
 from .forms import SearchForm
 from .helpers import hashtag_queryset, get_hashtags_context
 from .models import Hashtag
+from .visibility import redact
 
 
 class Index(ListView):
@@ -49,6 +51,22 @@ class Index(ListView):
         # evaluate the paginated queryset we are displaying.
         if context["page_obj"]:
             context = get_hashtags_context(self.request, self.object_list, context)
+
+            # The wiki can hide an edit summary or a username after we record
+            # it, so check this page of results before we show it. T277832
+            context["hashtags"], removed = redact(context["hashtags"])
+            context["object_list"] = context["hashtags"]
+            if removed:
+                messages.add_message(
+                    self.request,
+                    messages.INFO,
+                    # Translators: Message to be displayed when some results
+                    # were removed because the wiki no longer shows them.
+                    _(
+                        "Some results are not shown. The wiki has hidden them, "
+                        "or we could not confirm that they are still public."
+                    ),
+                )
         elif self.request.GET.get("query"):
             messages.add_message(
                 self.request,
@@ -70,6 +88,15 @@ class Index(ListView):
             context["top_tags"] = [x[0] for x in top_tags]
 
         return context
+
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        if request.GET.get("query"):
+            # We checked these results against the wiki as we rendered them.
+            # A cache must not keep serving them after the wiki hides an
+            # edit. T277832
+            add_never_cache_headers(response)
+        return response
 
     def get_queryset(self):
         form = self.form_class(self.request.GET)
