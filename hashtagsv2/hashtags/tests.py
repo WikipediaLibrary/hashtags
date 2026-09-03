@@ -24,6 +24,19 @@ def all_revisions_visible(domain, rev_ids):
     }
 
 
+def hide_revision(hidden_rev_id):
+    """Stand in for the API, reporting one revision as hidden by the wiki."""
+
+    def query_wiki(domain, rev_ids):
+        response = all_revisions_visible(domain, rev_ids)
+        for revision in response["query"]["pages"][0]["revisions"]:
+            if revision["revid"] == hidden_rev_id:
+                revision["commenthidden"] = True
+        return response
+
+    return query_wiki
+
+
 class HomepageTest(TestCase):
     @classmethod
     def setUp(cls):
@@ -321,6 +334,76 @@ class HashtagSearchTest(TestCase):
         # JSON should contain 1 row. Not sure though if this test
         # tests enough.
         self.assertEqual(len(json_content["Rows"]), 1)
+
+    def test_hashtags_download_csv_omits_hidden_rows(self):
+        """
+        A revision that the wiki has hidden is left out of the CSV.
+        """
+        hidden_rev_id = Hashtag.objects.filter(hashtag="hashtag1").first().rev_id
+
+        request = RequestFactory().get(self.download_url, {"query": "hashtag1"})
+        with patch(
+            "hashtagsv2.hashtags.visibility._query_wiki",
+            side_effect=hide_revision(hidden_rev_id),
+        ):
+            response = views.csv_download(request)
+
+        # Header plus the four rows that the wiki still shows.
+        self.assertEqual(len(response.content.splitlines()), 5)
+        self.assertNotIn(str(hidden_rev_id).encode(), response.content)
+
+    def test_hashtags_download_json_omits_hidden_rows(self):
+        """
+        A revision that the wiki has hidden is left out of the JSON.
+        """
+        hidden_rev_id = Hashtag.objects.filter(hashtag="hashtag1").first().rev_id
+
+        request = RequestFactory().get(self.download_url, {"query": "hashtag1"})
+        with patch(
+            "hashtagsv2.hashtags.visibility._query_wiki",
+            side_effect=hide_revision(hidden_rev_id),
+        ):
+            response = views.json_download(request)
+
+        json_content = loads(response.content.decode("utf-8"))
+
+        self.assertEqual(len(json_content["Rows"]), 4)
+        self.assertNotIn(
+            hidden_rev_id, [row["Revision_ID"] for row in json_content["Rows"]]
+        )
+
+    def test_hashtags_download_refuses_large_result_set(self):
+        """
+        A search with more results than we can check does not download.
+
+        We send the user back to the search page instead of a file that is
+        short for a reason that they cannot see. See T277832.
+        """
+        request = RequestFactory().get(self.download_url, {"query": "hashtag1"})
+
+        for view in [views.csv_download, views.json_download]:
+            with (
+                patch("hashtagsv2.hashtags.views.EXPORT_VERIFY_LIMIT", 2),
+                patch("hashtagsv2.hashtags.visibility._query_wiki") as query_wiki,
+            ):
+                response = view(request)
+
+            # We refuse before we call the API, so that a large search
+            # cannot make many calls.
+            query_wiki.assert_not_called()
+            self.assertEqual(response.status_code, 302)
+            self.assertIn("query=hashtag1", response.url)
+
+    def test_hashtags_downloads_are_not_cached(self):
+        """
+        A cache must not keep a download, because the wiki can hide an edit
+        after we send it. See T277832.
+        """
+        request = RequestFactory().get(self.download_url, {"query": "hashtag1"})
+
+        for view in [views.csv_download, views.json_download]:
+            response = view(request)
+            self.assertIn("no-store", response["Cache-Control"])
 
     def test_no_hashtags(self):
         """
