@@ -19,6 +19,15 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "hashtagsv2.hashtags",
     "hashtagsv2.graphs",
+    "django_nose",
+]
+
+TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
+
+NOSE_ARGS = [
+    "--with-coverage",
+    "--cover-package=./",
+    "--cover-xml",
 ]
 
 MIDDLEWARE = [
