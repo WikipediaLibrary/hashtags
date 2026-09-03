@@ -31,6 +31,11 @@ API_TOTAL_BUDGET_S = 10.0
 
 API_USER_AGENT = "hashtags (https://hashtags.wmcloud.org)"
 
+# The most rows that we check for one download. A download sends all of the
+# results, not one page of them. A larger search needs more API calls than we
+# can make before the request times out, so we refuse it.
+EXPORT_VERIFY_LIMIT = 5000
+
 # What we treat as "we could not check this batch". The response comes from
 # another service, so we include the errors that a malformed body causes: to
 # show a row that we could not read is worse than to drop it.
@@ -142,7 +147,7 @@ def redact(rows):
     Remove the rows that the wiki no longer shows publicly.
 
     `rows` are the named tuples that hashtag_queryset() returns, for one page
-    of results. Returns (rows_to_show, number_removed).
+    of results or for one download. Returns (rows_to_show, number_removed).
     """
     rows = list(rows)
 

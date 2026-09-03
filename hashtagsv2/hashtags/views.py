@@ -1,9 +1,12 @@
 import csv
 from datetime import datetime, timedelta, timezone
+from urllib.parse import urlencode
 
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Count
+from django.shortcuts import redirect
+from django.urls import reverse
 from django.views.generic import ListView, TemplateView
 from django.utils.cache import add_never_cache_headers
 from django.utils.translation import gettext as _
@@ -11,7 +14,7 @@ from django.utils.translation import gettext as _
 from .forms import SearchForm
 from .helpers import hashtag_queryset, get_hashtags_context
 from .models import Hashtag
-from .visibility import redact
+from .visibility import EXPORT_VERIFY_LIMIT, redact
 
 
 class Index(ListView):
@@ -121,15 +124,51 @@ class Index(ListView):
         return []
 
 
+def rows_for_download(request):
+    """
+    Get the rows for a download, after a check against the wikis.
+
+    Returns (rows, refusal). If the search has too many results to check,
+    `rows` is None and `refusal` is a response that sends the user back to
+    the search page.
+    """
+    request_dict = request.GET.dict()
+    hashtags = hashtag_queryset(request_dict)
+
+    # A download sends all of the results, not one page of them. A large
+    # search needs more API calls than we can make before the request times
+    # out. We refuse those searches, because a file that is short for a
+    # reason that the user cannot see is worse than no file. T277832
+    if hashtags.count() > EXPORT_VERIFY_LIMIT:
+        messages.add_message(
+            request,
+            messages.INFO,
+            # Translators: Message to be displayed when a search has too many
+            # results to download.
+            _(
+                "This search has too many results to download. Make the "
+                "search smaller, then try again."
+            ),
+        )
+        refusal = redirect(
+            "{path}?{query}".format(
+                path=reverse("index"), query=urlencode(request_dict)
+            )
+        )
+        return None, refusal
+
+    return redact(hashtags)[0], None
+
+
 def csv_download(request):
     # If this fails for large files we should consider
     # https://docs.djangoproject.com/en/2.1/howto/outputting-csv/#streaming-large-csv-files
-    request_dict = request.GET.dict()
+    hashtags, refusal = rows_for_download(request)
+    if refusal is not None:
+        return refusal
 
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = 'attachment; filename="hashtags.csv"'
-
-    hashtags = hashtag_queryset(request_dict)
 
     writer = csv.writer(response)
     writer.writerow(
@@ -160,13 +199,17 @@ def csv_download(request):
             ]
         )
 
+    # We checked these rows against the wikis as we made the file. A cache
+    # must not send them again after the wiki hides an edit. T277832
+    add_never_cache_headers(response)
+
     return response
 
 
 def json_download(request):
-    request_dict = request.GET.dict()
-
-    hashtags = hashtag_queryset(request_dict)
+    hashtags, refusal = rows_for_download(request)
+    if refusal is not None:
+        return refusal
 
     row_list = []
     for hashtag in hashtags:
@@ -181,7 +224,13 @@ def json_download(request):
             }
         )
 
-    return JsonResponse({"Rows": row_list})
+    response = JsonResponse({"Rows": row_list})
+
+    # We checked these rows against the wikis as we made the file. A cache
+    # must not send them again after the wiki hides an edit. T277832
+    add_never_cache_headers(response)
+
+    return response
 
 
 class Docs(TemplateView):
