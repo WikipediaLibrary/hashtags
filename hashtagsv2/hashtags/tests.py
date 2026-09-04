@@ -11,6 +11,7 @@ from .factories import HashtagFactory
 from .models import Hashtag
 from .helpers import split_hashtags
 from . import views
+from . import visibility
 
 
 def all_revisions_visible(domain, rev_ids):
@@ -394,6 +395,43 @@ class HashtagSearchTest(TestCase):
             self.assertEqual(response.status_code, 302)
             self.assertIn("query=hashtag1", response.url)
 
+    def test_hashtags_download_refuses_an_incomplete_check(self):
+        """
+        A download stops if we cannot check every row.
+
+        We must not send a file that is short for a reason that the user
+        cannot see. See T277832.
+        """
+        request = RequestFactory().get(self.download_url, {"query": "hashtag1"})
+
+        for view in [views.csv_download, views.json_download]:
+            with patch("hashtagsv2.hashtags.views.EXPORT_TOTAL_BUDGET_S", -1):
+                response = view(request)
+
+            self.assertEqual(response.status_code, 302)
+            self.assertIn("query=hashtag1", response.url)
+
+    def test_hashtags_download_refuses_too_many_api_calls(self):
+        """
+        A download stops if the check needs too many API calls.
+
+        The number of calls depends on how many wikis the results come from,
+        so the row limit cannot bound it. We refuse before we make the first
+        call. See T277832.
+        """
+        request = RequestFactory().get(self.download_url, {"query": "hashtag1"})
+
+        for view in [views.csv_download, views.json_download]:
+            with (
+                patch("hashtagsv2.hashtags.views.EXPORT_MAX_BATCHES", 0),
+                patch("hashtagsv2.hashtags.visibility._query_wiki") as query_wiki,
+            ):
+                response = view(request)
+
+            query_wiki.assert_not_called()
+            self.assertEqual(response.status_code, 302)
+            self.assertIn("query=hashtag1", response.url)
+
     def test_hashtags_downloads_are_not_cached(self):
         """
         A cache must not keep a download, because the wiki can hide an edit
@@ -645,3 +683,93 @@ class RevisionVisibilityTest(TestCase):
                 response = views.Index.as_view()(request)
                 self.assertEqual(len(response.context_data["object_list"]), 0)
                 query.assert_not_called()
+
+    def test_redact_reports_a_complete_check(self):
+        """
+        redact() says that it got an answer for every row.
+        """
+        rows = [
+            HashtagFactory(
+                hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org"
+            ).get_values_list()
+        ]
+        with patch(
+            "hashtagsv2.hashtags.visibility._query_wiki",
+            return_value={"query": {"pages": [{"revisions": [{"revid": 1}]}]}},
+        ):
+            rows_to_show, removed, complete = visibility.redact(rows)
+
+        self.assertEqual(len(rows_to_show), 1)
+        self.assertEqual(removed, 0)
+        self.assertTrue(complete)
+
+    def test_redact_reports_a_failed_call(self):
+        """
+        A call that fails makes the check incomplete.
+
+        A download refuses when it sees this, instead of sending a file that
+        is short for a reason that the user cannot see.
+        """
+        rows = [
+            HashtagFactory(
+                hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org"
+            ).get_values_list()
+        ]
+        with patch(
+            "hashtagsv2.hashtags.visibility._query_wiki",
+            side_effect=requests.RequestException("boom"),
+        ):
+            rows_to_show, removed, complete = visibility.redact(rows)
+
+        self.assertEqual(rows_to_show, [])
+        self.assertEqual(removed, 1)
+        self.assertFalse(complete)
+
+    def test_redact_reports_that_it_ran_out_of_time(self):
+        rows = [
+            HashtagFactory(
+                hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org"
+            ).get_values_list()
+        ]
+        with patch("hashtagsv2.hashtags.visibility._query_wiki") as query_wiki:
+            rows_to_show, removed, complete = visibility.redact(rows, budget=-1)
+
+        query_wiki.assert_not_called()
+        self.assertEqual(rows_to_show, [])
+        self.assertFalse(complete)
+
+    def test_redact_refuses_too_many_api_calls(self):
+        """
+        redact() counts the calls before it makes the first one.
+        """
+        rows = [
+            HashtagFactory(
+                hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org"
+            ).get_values_list()
+        ]
+        with patch("hashtagsv2.hashtags.visibility._query_wiki") as query_wiki:
+            rows_to_show, removed, complete = visibility.redact(rows, max_batches=0)
+
+        query_wiki.assert_not_called()
+        self.assertEqual(rows_to_show, [])
+        self.assertEqual(removed, 1)
+        self.assertFalse(complete)
+
+    def test_count_batches_counts_each_wiki_separately(self):
+        """
+        One call takes 50 revisions from one wiki, so each wiki needs its own
+        call. This is why the row limit cannot bound the number of calls.
+        """
+        self.assertEqual(visibility._count_batches({}), 0)
+        self.assertEqual(
+            visibility._count_batches({"en.wikipedia.org": set(range(50))}), 1
+        )
+        self.assertEqual(
+            visibility._count_batches({"en.wikipedia.org": set(range(51))}), 2
+        )
+        self.assertEqual(
+            visibility._count_batches(
+                {"en.wikipedia.org": {1}, "commons.wikimedia.org": {2}}
+            ),
+            2,
+        )

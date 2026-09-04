@@ -14,7 +14,12 @@ from django.utils.translation import gettext as _
 from .forms import SearchForm
 from .helpers import hashtag_queryset, get_hashtags_context
 from .models import Hashtag
-from .visibility import EXPORT_VERIFY_LIMIT, redact
+from .visibility import (
+    EXPORT_MAX_BATCHES,
+    EXPORT_TOTAL_BUDGET_S,
+    EXPORT_VERIFY_LIMIT,
+    redact,
+)
 
 
 class Index(ListView):
@@ -57,7 +62,11 @@ class Index(ListView):
 
             # The wiki can hide an edit summary or a username after we record
             # it, so check this page of results before we show it. T277832
-            context["hashtags"], removed = redact(context["hashtags"])
+            #
+            # We ignore whether the check reached every row. A page holds 20
+            # rows, so it needs 20 API calls at most, and the message below
+            # tells the user that some results are missing.
+            context["hashtags"], removed, _complete = redact(context["hashtags"])
             context["object_list"] = context["hashtags"]
             if removed:
                 messages.add_message(
@@ -124,40 +133,51 @@ class Index(ListView):
         return []
 
 
+def refuse_download(request, request_dict):
+    """Send the user back to the search page, and say why."""
+    messages.add_message(
+        request,
+        messages.INFO,
+        # Translators: Message to be displayed when we cannot check all of
+        # the results of a search, so we cannot make a file of them.
+        _(
+            "We cannot check all of the results of this search, so we cannot "
+            "make the file. Make the search smaller, or try again later."
+        ),
+    )
+    return redirect(
+        "{path}?{query}".format(path=reverse("index"), query=urlencode(request_dict))
+    )
+
+
 def rows_for_download(request):
     """
     Get the rows for a download, after a check against the wikis.
 
-    Returns (rows, refusal). If the search has too many results to check,
-    `rows` is None and `refusal` is a response that sends the user back to
-    the search page.
+    Returns (rows, refusal). If we cannot check all of the results, `rows` is
+    None and `refusal` is a response that sends the user back to the search
+    page. A file that is short for a reason that the user cannot see is worse
+    than no file. See T277832.
     """
     request_dict = request.GET.dict()
     hashtags = hashtag_queryset(request_dict)
 
     # A download sends all of the results, not one page of them. A large
     # search needs more API calls than we can make before the request times
-    # out. We refuse those searches, because a file that is short for a
-    # reason that the user cannot see is worse than no file. T277832
+    # out, so we refuse it before we read the rows.
     if hashtags.count() > EXPORT_VERIFY_LIMIT:
-        messages.add_message(
-            request,
-            messages.INFO,
-            # Translators: Message to be displayed when a search has too many
-            # results to download.
-            _(
-                "This search has too many results to download. Make the "
-                "search smaller, then try again."
-            ),
-        )
-        refusal = redirect(
-            "{path}?{query}".format(
-                path=reverse("index"), query=urlencode(request_dict)
-            )
-        )
-        return None, refusal
+        return None, refuse_download(request, request_dict)
 
-    return redact(hashtags)[0], None
+    rows, _removed, complete = redact(
+        hashtags, budget=EXPORT_TOTAL_BUDGET_S, max_batches=EXPORT_MAX_BATCHES
+    )
+
+    # The check needs too many calls, or it ran out of time, or a call
+    # failed. We do not know about every row, so we send no file.
+    if not complete:
+        return None, refuse_download(request, request_dict)
+
+    return rows, None
 
 
 def csv_download(request):
