@@ -1,0 +1,22 @@
+name: Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Create env file
+        run: cp template.env .env
+
+      # The default TEST_RUNNER (django-nose) does not work on Python 3.11,
+      # because nose uses collections.Callable. Use the Django test runner.
+      - name: Run tests
+        run: >
+          docker compose run --rm --build migrate
+          python manage.py test --noinput --testrunner=django.test.runner.DiscoverRunner
