@@ -7,3 +7,4 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.1.0
 django-nose==1.4.6
 coverage==4.5.3
+requests==2.34.2

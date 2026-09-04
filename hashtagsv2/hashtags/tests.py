@@ -2,6 +2,8 @@ from datetime import datetime
 from mock import patch
 from json import loads
 
+import requests
+
 from django.urls import reverse
 from django.test import TestCase, RequestFactory
 
@@ -9,6 +11,31 @@ from .factories import HashtagFactory
 from .models import Hashtag
 from .helpers import split_hashtags
 from . import views
+from . import visibility
+
+
+def all_revisions_visible(domain, rev_ids):
+    """Stand in for the API, reporting every revision asked about as public."""
+    return {
+        "query": {
+            "pages": [
+                {"revisions": [{"revid": rev_id} for rev_id in rev_ids]},
+            ]
+        }
+    }
+
+
+def hide_revision(hidden_rev_id):
+    """Stand in for the API, reporting one revision as hidden by the wiki."""
+
+    def query_wiki(domain, rev_ids):
+        response = all_revisions_visible(domain, rev_ids)
+        for revision in response["query"]["pages"][0]["revisions"]:
+            if revision["revid"] == hidden_rev_id:
+                revision["commenthidden"] = True
+        return response
+
+    return query_wiki
 
 
 class HomepageTest(TestCase):
@@ -58,6 +85,14 @@ class HashtagSearchTest(TestCase):
         cls.message_patcher = patch("hashtagsv2.hashtags.views.messages.add_message")
         cls.message_patcher.start()
 
+        # Results are checked against the wiki before they are displayed, so
+        # stop the tests from calling out to the API. See T277832.
+        cls.visibility_patcher = patch(
+            "hashtagsv2.hashtags.visibility._query_wiki",
+            side_effect=all_revisions_visible,
+        )
+        cls.visibility_patcher.start()
+
     @classmethod
     def setUpClass(cls):
         super(HashtagSearchTest, cls).setUpClass()
@@ -67,6 +102,7 @@ class HashtagSearchTest(TestCase):
     def tearDown(self):
         super(HashtagSearchTest, self).tearDown()
         self.message_patcher.stop()
+        self.visibility_patcher.stop()
 
     def test_split_hashtags1(self):
         """
@@ -300,6 +336,113 @@ class HashtagSearchTest(TestCase):
         # tests enough.
         self.assertEqual(len(json_content["Rows"]), 1)
 
+    def test_hashtags_download_csv_omits_hidden_rows(self):
+        """
+        A revision that the wiki has hidden is left out of the CSV.
+        """
+        hidden_rev_id = Hashtag.objects.filter(hashtag="hashtag1").first().rev_id
+
+        request = RequestFactory().get(self.download_url, {"query": "hashtag1"})
+        with patch(
+            "hashtagsv2.hashtags.visibility._query_wiki",
+            side_effect=hide_revision(hidden_rev_id),
+        ):
+            response = views.csv_download(request)
+
+        # Header plus the four rows that the wiki still shows.
+        self.assertEqual(len(response.content.splitlines()), 5)
+        self.assertNotIn(str(hidden_rev_id).encode(), response.content)
+
+    def test_hashtags_download_json_omits_hidden_rows(self):
+        """
+        A revision that the wiki has hidden is left out of the JSON.
+        """
+        hidden_rev_id = Hashtag.objects.filter(hashtag="hashtag1").first().rev_id
+
+        request = RequestFactory().get(self.download_url, {"query": "hashtag1"})
+        with patch(
+            "hashtagsv2.hashtags.visibility._query_wiki",
+            side_effect=hide_revision(hidden_rev_id),
+        ):
+            response = views.json_download(request)
+
+        json_content = loads(response.content.decode("utf-8"))
+
+        self.assertEqual(len(json_content["Rows"]), 4)
+        self.assertNotIn(
+            hidden_rev_id, [row["Revision_ID"] for row in json_content["Rows"]]
+        )
+
+    def test_hashtags_download_refuses_large_result_set(self):
+        """
+        A search with more results than we can check does not download.
+
+        We send the user back to the search page instead of a file that is
+        short for a reason that they cannot see. See T277832.
+        """
+        request = RequestFactory().get(self.download_url, {"query": "hashtag1"})
+
+        for view in [views.csv_download, views.json_download]:
+            with (
+                patch("hashtagsv2.hashtags.views.EXPORT_VERIFY_LIMIT", 2),
+                patch("hashtagsv2.hashtags.visibility._query_wiki") as query_wiki,
+            ):
+                response = view(request)
+
+            # We refuse before we call the API, so that a large search
+            # cannot make many calls.
+            query_wiki.assert_not_called()
+            self.assertEqual(response.status_code, 302)
+            self.assertIn("query=hashtag1", response.url)
+
+    def test_hashtags_download_refuses_an_incomplete_check(self):
+        """
+        A download stops if we cannot check every row.
+
+        We must not send a file that is short for a reason that the user
+        cannot see. See T277832.
+        """
+        request = RequestFactory().get(self.download_url, {"query": "hashtag1"})
+
+        for view in [views.csv_download, views.json_download]:
+            with patch("hashtagsv2.hashtags.views.EXPORT_TOTAL_BUDGET_S", -1):
+                response = view(request)
+
+            self.assertEqual(response.status_code, 302)
+            self.assertIn("query=hashtag1", response.url)
+
+    def test_hashtags_download_refuses_too_many_api_calls(self):
+        """
+        A download stops if the check needs too many API calls.
+
+        The number of calls depends on how many wikis the results come from,
+        so the row limit cannot bound it. We refuse before we make the first
+        call. See T277832.
+        """
+        request = RequestFactory().get(self.download_url, {"query": "hashtag1"})
+
+        for view in [views.csv_download, views.json_download]:
+            with (
+                patch("hashtagsv2.hashtags.views.EXPORT_MAX_BATCHES", 0),
+                patch("hashtagsv2.hashtags.visibility._query_wiki") as query_wiki,
+            ):
+                response = view(request)
+
+            query_wiki.assert_not_called()
+            self.assertEqual(response.status_code, 302)
+            self.assertIn("query=hashtag1", response.url)
+
+    def test_hashtags_downloads_are_not_cached(self):
+        """
+        A cache must not keep a download, because the wiki can hide an edit
+        after we send it. See T277832.
+        """
+        request = RequestFactory().get(self.download_url, {"query": "hashtag1"})
+
+        for view in [views.csv_download, views.json_download]:
+            response = view(request)
+            self.assertIn("no-store", response["Cache-Control"])
+
     def test_no_hashtags(self):
         """
         On first setup, the tool has nothing in the database.
@@ -343,6 +486,7 @@ class HashtagSearchTest(TestCase):
         Test that we get the correct object list when search_type
         'and' is provided by user
         """
+        # Two hashtags on one edit, so both rows share the edit's IDs.
         HashtagFactory(
             hashtag="hashtag_and_1",
             timestamp=datetime(2016, 1, 3),
@@ -350,6 +494,7 @@ class HashtagSearchTest(TestCase):
             page_title="test",
             edit_summary="test_summary",
             rc_id=1234,
+            rev_id=5678,
         )
         HashtagFactory(
             hashtag="hashtag_and_2",
@@ -358,6 +503,7 @@ class HashtagSearchTest(TestCase):
             page_title="test",
             edit_summary="test_summary",
             rc_id=1234,
+            rev_id=5678,
         )
 
         factory = RequestFactory()
@@ -432,3 +578,198 @@ class HashtagSearchTest(TestCase):
         self.assertEqual(len(object_list), 1)
         # And it is the correct edit
         self.assertEqual(object_list[0].rc_id, 1234)
+
+
+class RevisionVisibilityTest(TestCase):
+    """
+    The wiki can hide an edit summary or a username after we record it, so
+    results are checked before they are displayed. See T277832.
+    """
+
+    def setUp(self):
+        self.url = reverse("index")
+        self.factory = RequestFactory()
+        self.message_patcher = patch("hashtagsv2.hashtags.views.messages.add_message")
+        self.message_patcher.start()
+
+    def tearDown(self):
+        super(RevisionVisibilityTest, self).tearDown()
+        self.message_patcher.stop()
+
+    def _results(self, api_response):
+        """Search for one hashtag, with the API replaced by a fixed answer."""
+        with patch(
+            "hashtagsv2.hashtags.visibility._query_wiki", return_value=api_response
+        ):
+            request = self.factory.get(self.url, {"query": "hashtag1"})
+            response = views.Index.as_view()(request)
+            return response.context_data["object_list"]
+
+    def test_hidden_summary_removes_row(self):
+        HashtagFactory(hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org")
+        object_list = self._results(
+            {"query": {"pages": [{"revisions": [{"revid": 1, "commenthidden": True}]}]}}
+        )
+        self.assertEqual(len(object_list), 0)
+
+    def test_suppressed_revision_removes_row(self):
+        HashtagFactory(hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org")
+        object_list = self._results(
+            {"query": {"pages": [{"revisions": [{"revid": 1, "suppressed": True}]}]}}
+        )
+        self.assertEqual(len(object_list), 0)
+
+    def test_deleted_page_removes_row(self):
+        HashtagFactory(hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org")
+        object_list = self._results({"query": {"badrevids": {"1": {"revid": 1}}}})
+        self.assertEqual(len(object_list), 0)
+
+    def test_hidden_username_removes_row(self):
+        # We drop the row rather than blank the name, because the user search
+        # filter still matches on the stored username.
+        HashtagFactory(
+            hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org", username="xyz"
+        )
+        object_list = self._results(
+            {"query": {"pages": [{"revisions": [{"revid": 1, "userhidden": True}]}]}}
+        )
+        self.assertEqual(len(object_list), 0)
+
+    def test_api_error_response_removes_rows(self):
+        # MediaWiki reports some errors with HTTP 200 and an error object.
+        HashtagFactory(hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org")
+        object_list = self._results({"error": {"code": "badvalue"}})
+        self.assertEqual(len(object_list), 0)
+
+    def test_malformed_response_removes_rows(self):
+        HashtagFactory(hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org")
+        object_list = self._results({"query": {"pages": "not a list"}})
+        self.assertEqual(len(object_list), 0)
+
+    def test_visible_revision_is_shown(self):
+        HashtagFactory(
+            hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org", username="xyz"
+        )
+        object_list = self._results(
+            {"query": {"pages": [{"revisions": [{"revid": 1}]}]}}
+        )
+        self.assertEqual(len(object_list), 1)
+        self.assertEqual(object_list[0].username, "xyz")
+
+    def test_row_with_no_revision_id_is_removed(self):
+        # Log actions such as uploads have no revision ID, so we cannot check
+        # them and must not show them.
+        HashtagFactory(hashtag="hashtag1", rev_id=None, domain="en.wikipedia.org")
+        object_list = self._results({"query": {"pages": []}})
+        self.assertEqual(len(object_list), 0)
+
+    def test_api_failure_removes_rows(self):
+        HashtagFactory(hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org")
+        with patch(
+            "hashtagsv2.hashtags.visibility._query_wiki",
+            side_effect=requests.RequestException("boom"),
+        ):
+            request = self.factory.get(self.url, {"query": "hashtag1"})
+            response = views.Index.as_view()(request)
+            self.assertEqual(len(response.context_data["object_list"]), 0)
+
+    def test_time_budget_stops_further_api_calls(self):
+        # Results can span many wikis. We must stop before the gunicorn
+        # worker times out, and not show what we did not check.
+        HashtagFactory(hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org")
+        with patch("hashtagsv2.hashtags.visibility.API_TOTAL_BUDGET_S", -1):
+            with patch("hashtagsv2.hashtags.visibility._query_wiki") as query:
+                request = self.factory.get(self.url, {"query": "hashtag1"})
+                response = views.Index.as_view()(request)
+                self.assertEqual(len(response.context_data["object_list"]), 0)
+                query.assert_not_called()
+
+    def test_redact_reports_a_complete_check(self):
+        """
+        redact() says that it got an answer for every row.
+        """
+        rows = [
+            HashtagFactory(
+                hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org"
+            ).get_values_list()
+        ]
+        with patch(
+            "hashtagsv2.hashtags.visibility._query_wiki",
+            return_value={"query": {"pages": [{"revisions": [{"revid": 1}]}]}},
+        ):
+            rows_to_show, removed, complete = visibility.redact(rows)
+
+        self.assertEqual(len(rows_to_show), 1)
+        self.assertEqual(removed, 0)
+        self.assertTrue(complete)
+
+    def test_redact_reports_a_failed_call(self):
+        """
+        A call that fails makes the check incomplete.
+
+        A download refuses when it sees this, instead of sending a file that
+        is short for a reason that the user cannot see.
+        """
+        rows = [
+            HashtagFactory(
+                hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org"
+            ).get_values_list()
+        ]
+        with patch(
+            "hashtagsv2.hashtags.visibility._query_wiki",
+            side_effect=requests.RequestException("boom"),
+        ):
+            rows_to_show, removed, complete = visibility.redact(rows)
+
+        self.assertEqual(rows_to_show, [])
+        self.assertEqual(removed, 1)
+        self.assertFalse(complete)
+
+    def test_redact_reports_that_it_ran_out_of_time(self):
+        rows = [
+            HashtagFactory(
+                hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org"
+            ).get_values_list()
+        ]
+        with patch("hashtagsv2.hashtags.visibility._query_wiki") as query_wiki:
+            rows_to_show, removed, complete = visibility.redact(rows, budget=-1)
+
+        query_wiki.assert_not_called()
+        self.assertEqual(rows_to_show, [])
+        self.assertFalse(complete)
+
+    def test_redact_refuses_too_many_api_calls(self):
+        """
+        redact() counts the calls before it makes the first one.
+        """
+        rows = [
+            HashtagFactory(
+                hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org"
+            ).get_values_list()
+        ]
+        with patch("hashtagsv2.hashtags.visibility._query_wiki") as query_wiki:
+            rows_to_show, removed, complete = visibility.redact(rows, max_batches=0)
+
+        query_wiki.assert_not_called()
+        self.assertEqual(rows_to_show, [])
+        self.assertEqual(removed, 1)
+        self.assertFalse(complete)
+
+    def test_count_batches_counts_each_wiki_separately(self):
+        """
+        One call takes 50 revisions from one wiki, so each wiki needs its own
+        call. This is why the row limit cannot bound the number of calls.
+        """
+        self.assertEqual(visibility._count_batches({}), 0)
+        self.assertEqual(
+            visibility._count_batches({"en.wikipedia.org": set(range(50))}), 1
+        )
+        self.assertEqual(
+            visibility._count_batches({"en.wikipedia.org": set(range(51))}), 2
+        )
+        self.assertEqual(
+            visibility._count_batches(
+                {"en.wikipedia.org": {1}, "commons.wikimedia.org": {2}}
+            ),
+            2,
+        )

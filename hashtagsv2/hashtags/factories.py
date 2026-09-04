@@ -18,6 +18,9 @@ class HashtagFactory(factory.django.DjangoModelFactory):
     page_title = factory.Faker("word")
     edit_summary = factory.Faker("sentence")
     rc_id = random.randint(1, 100000)
+    # Rows need a revision ID so that they can be checked against the wiki.
+    # See T277832 and hashtagsv2.hashtags.visibility.
+    rev_id = factory.Sequence(lambda n: 1000000 + n)
     has_image = False
     has_video = False
     has_audio = False
