@@ -11,10 +11,13 @@ It also reports whether it reached every row, so that a caller which must not
 send a part of a result, such as a download, can refuse instead.
 """
 
+import functools
 import logging
 import time
 from collections import defaultdict
 
+import mwapi
+import mwapi.errors
 import requests
 
 logger = logging.getLogger(__name__)
@@ -23,37 +26,57 @@ logger = logging.getLogger(__name__)
 # have the apihighlimits right. See https://www.mediawiki.org/wiki/API:Query
 API_BATCH_SIZE = 50
 
-# Connect and read timeouts for one request.
-API_TIMEOUT_S = (3.05, 5)
+# How long we wait for one API call. requests applies this value to the
+# connect and to the read separately, so one call can take twice as long.
+API_TIMEOUT_S = 3.0
+
+# The worst case for one call. We keep this much of the budget free, so that
+# a slow wiki cannot push the request past the gunicorn worker timeout. That
+# timeout kills the worker, and the user gets a 502 instead of the message
+# which tells them what happened.
+API_WORST_CASE_CALL_S = 2 * API_TIMEOUT_S
 
 # The most time we spend on API calls for one page of results. Results can
 # span many wikis, and we must answer well inside the gunicorn worker
-# timeout. We do not show the rows that we do not reach in time.
+# timeout. We do not show the rows that we do not reach in time. This must
+# be more than API_WORST_CASE_CALL_S, or we would make no calls at all.
 API_TOTAL_BUDGET_S = 10.0
 
 API_USER_AGENT = "hashtags (https://hashtags.wmcloud.org)"
 
-# The most rows that we check for one download. A download sends all of the
-# results, not one page of them. A larger search needs more API calls than we
-# can make before the request times out, so we refuse it.
-EXPORT_VERIFY_LIMIT = 5000
-
-# The most time that we spend on API calls for one download. This is larger
-# than the budget for a page of results, because a download has many more
-# rows. It stays well inside the gunicorn worker timeout.
-EXPORT_TOTAL_BUDGET_S = 45.0
+# How many API sessions we keep. One session holds a connection pool for one
+# wiki, and results can come from any of about 900 wikis.
+SESSION_CACHE_SIZE = 128
 
 # The most API calls that we make for one download. The number of calls
 # depends on how many wikis the results come from, not only on how many rows
-# there are, so EXPORT_VERIFY_LIMIT cannot bound the time by itself: 5000
-# rows from 362 wikis need 362 calls. We refuse a download that needs more.
-EXPORT_MAX_BATCHES = 150
+# there are: 3000 rows from 362 wikis need 362 calls. We refuse a download
+# that needs more calls than this, before we make the first one, because the
+# budget below would run out first. This many calls in that budget is one
+# call every half second, which a pooled connection to a wiki that answers
+# quickly can do.
+EXPORT_MAX_BATCHES = 60
 
-# What we treat as "we could not check this batch". The response comes from
-# another service, so we include the errors that a malformed body causes: to
-# show a row that we could not read is worse than to drop it.
+# The most rows that we check for one download. A download sends all of the
+# results, not one page of them. This is the best case for the call limit
+# above, with every row on one wiki, and it lets us refuse a large search
+# from a row count alone, before we read the rows.
+EXPORT_VERIFY_LIMIT = API_BATCH_SIZE * EXPORT_MAX_BATCHES
+
+# The most time that we spend on API calls for one download. This is larger
+# than the budget for a page of results, because a download has many more
+# rows. It leaves the rest of the gunicorn worker timeout for the database
+# and for building the file.
+EXPORT_TOTAL_BUDGET_S = 30.0
+
+# What we treat as "we could not check this batch". mwapi raises APIError for
+# an error object that comes back with HTTP 200, and a subclass of
+# requests.RequestException for every other request failure. The response
+# comes from another service, so we also include the errors that a malformed
+# body causes: to show a row that we could not read is worse than to drop it.
 CHECK_FAILURES = (
     requests.RequestException,
+    mwapi.errors.APIError,
     AttributeError,
     KeyError,
     TypeError,
@@ -61,26 +84,34 @@ CHECK_FAILURES = (
 )
 
 
-def _query_wiki(domain, rev_ids):
-    """Ask one wiki about up to API_BATCH_SIZE revisions."""
-    response = requests.get(
-        "https://{domain}/w/api.php".format(domain=domain),
-        params={
-            "action": "query",
-            "prop": "revisions",
-            "revids": "|".join(str(rev_id) for rev_id in rev_ids),
-            # We must ask for the user and the comment. The API sends the
-            # "userhidden" and "commenthidden" markers only for properties
-            # that we request. We do not keep the values it sends back.
-            "rvprop": "ids|user|comment|flags",
-            "format": "json",
-            "formatversion": "2",
-        },
-        headers={"User-Agent": API_USER_AGENT},
+@functools.lru_cache(maxsize=SESSION_CACHE_SIZE)
+def _get_session(domain):
+    """
+    Get the API session for one wiki.
+
+    We keep the session between calls and between requests, so that a check
+    of many rows reuses one connection instead of making a new TLS handshake
+    for every batch.
+    """
+    return mwapi.Session(
+        "https://{domain}".format(domain=domain),
+        user_agent=API_USER_AGENT,
+        formatversion=2,
         timeout=API_TIMEOUT_S,
     )
-    response.raise_for_status()
-    return response.json()
+
+
+def _query_wiki(domain, rev_ids):
+    """Ask one wiki about up to API_BATCH_SIZE revisions."""
+    return _get_session(domain).get(
+        action="query",
+        prop="revisions",
+        revids="|".join(str(rev_id) for rev_id in rev_ids),
+        # We must ask for the user and the comment. The API sends the
+        # "userhidden" and "commenthidden" markers only for properties that
+        # we request. We do not keep the values it sends back.
+        rvprop="ids|user|comment|flags",
+    )
 
 
 def _read_response(data):
@@ -90,14 +121,6 @@ def _read_response(data):
     A revision that the wiki does not report is left out, so that the caller
     treats it as unsafe to show.
     """
-    if "error" in data:
-        # MediaWiki reports some errors with HTTP 200 and an error object.
-        # Without this we would read an empty result and quietly drop every
-        # row, which looks the same as "the wiki hid them all".
-        raise ValueError(
-            "API error: {code}".format(code=data["error"].get("code", "unknown"))
-        )
-
     may_show = {}
     query = data.get("query", {})
 
@@ -145,7 +168,10 @@ def _check_wikis(rev_ids_by_domain, budget):
     for domain, rev_ids in rev_ids_by_domain.items():
         rev_ids = sorted(rev_ids)
         for start in range(0, len(rev_ids), API_BATCH_SIZE):
-            if time.monotonic() > deadline:
+            # We start a call only if the worst case for it still fits in the
+            # budget. A slow wiki must not make the whole request run past
+            # the gunicorn worker timeout.
+            if time.monotonic() + API_WORST_CASE_CALL_S > deadline:
                 logger.warning(
                     "Ran out of time checking revision visibility. "
                     "The rows we did not reach will not be shown."
@@ -209,9 +235,15 @@ def redact(rows, budget=None, max_batches=None):
     number_removed = 0
 
     for row in rows:
-        # A row with no revision ID is a log action, such as an upload or a
-        # page move. We have no key to check it with, so we do not show it.
-        if may_show.get((row.domain, row.rev_id)):
+        if row.rev_id is None:
+            # A log action, such as a page move, has no revision ID. The API
+            # finds a log entry by its log ID, and we record the recent
+            # changes ID instead, so we have no key to check the row with. We
+            # do not show it, and we report the check as incomplete, so that
+            # a download refuses rather than drop the row without a word.
+            number_removed += 1
+            complete = False
+        elif may_show.get((row.domain, row.rev_id)):
             rows_to_show.append(row)
         else:
             number_removed += 1

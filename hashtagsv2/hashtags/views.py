@@ -9,6 +9,7 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import ListView, TemplateView
 from django.utils.cache import add_never_cache_headers
+from django.views.decorators.cache import never_cache
 from django.utils.translation import gettext as _
 
 from .forms import SearchForm
@@ -133,18 +134,9 @@ class Index(ListView):
         return []
 
 
-def refuse_download(request, request_dict):
+def refuse_download(request, request_dict, message):
     """Send the user back to the search page, and say why."""
-    messages.add_message(
-        request,
-        messages.INFO,
-        # Translators: Message to be displayed when we cannot check all of
-        # the results of a search, so we cannot make a file of them.
-        _(
-            "We cannot check all of the results of this search, so we cannot "
-            "make the file. Make the search smaller, or try again later."
-        ),
-    )
+    messages.add_message(request, messages.INFO, message)
     return redirect(
         "{path}?{query}".format(path=reverse("index"), query=urlencode(request_dict))
     )
@@ -166,20 +158,45 @@ def rows_for_download(request):
     # search needs more API calls than we can make before the request times
     # out, so we refuse it before we read the rows.
     if hashtags.count() > EXPORT_VERIFY_LIMIT:
-        return None, refuse_download(request, request_dict)
+        return None, refuse_download(
+            request,
+            request_dict,
+            # Translators: Message to be displayed when a search has more
+            # results than we can check, so we cannot make a file of them.
+            _(
+                "This search has too many results for us to check them all, "
+                "so we cannot make the file. Make the search smaller."
+            ),
+        )
 
     rows, _removed, complete = redact(
         hashtags, budget=EXPORT_TOTAL_BUDGET_S, max_batches=EXPORT_MAX_BATCHES
     )
 
     # The check needs too many calls, or it ran out of time, or a call
-    # failed. We do not know about every row, so we send no file.
+    # failed, or a row has no revision ID to check. We do not know about
+    # every row, so we send no file.
     if not complete:
-        return None, refuse_download(request, request_dict)
+        return None, refuse_download(
+            request,
+            request_dict,
+            # Translators: Message to be displayed when we could not check
+            # all of the results of a search, so we cannot make a file of
+            # them.
+            _(
+                "We could not check all of the results of this search, so we "
+                "cannot make the file. Make the search smaller, or try again "
+                "later."
+            ),
+        )
 
     return rows, None
 
 
+# We check these rows against the wikis as we make the file, and a cache
+# must not send them again after the wiki hides an edit. The decorator
+# also covers the refusal, which is a redirect. T277832
+@never_cache
 def csv_download(request):
     # If this fails for large files we should consider
     # https://docs.djangoproject.com/en/2.1/howto/outputting-csv/#streaming-large-csv-files
@@ -219,13 +236,13 @@ def csv_download(request):
             ]
         )
 
-    # We checked these rows against the wikis as we made the file. A cache
-    # must not send them again after the wiki hides an edit. T277832
-    add_never_cache_headers(response)
-
     return response
 
 
+# We check these rows against the wikis as we make the file, and a cache
+# must not send them again after the wiki hides an edit. The decorator
+# also covers the refusal, which is a redirect. T277832
+@never_cache
 def json_download(request):
     hashtags, refusal = rows_for_download(request)
     if refusal is not None:
@@ -244,13 +261,7 @@ def json_download(request):
             }
         )
 
-    response = JsonResponse({"Rows": row_list})
-
-    # We checked these rows against the wikis as we made the file. A cache
-    # must not send them again after the wiki hides an edit. T277832
-    add_never_cache_headers(response)
-
-    return response
+    return JsonResponse({"Rows": row_list})
 
 
 class Docs(TemplateView):

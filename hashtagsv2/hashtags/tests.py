@@ -2,6 +2,7 @@ from datetime import datetime
 from mock import patch
 from json import loads
 
+import mwapi.errors
 import requests
 
 from django.urls import reverse
@@ -432,6 +433,34 @@ class HashtagSearchTest(TestCase):
             self.assertEqual(response.status_code, 302)
             self.assertIn("query=hashtag1", response.url)
 
+    def test_hashtags_download_refuses_a_row_with_no_revision_id(self):
+        """
+        A download stops if a row has no revision ID to check.
+
+        A log action, such as a page move, has no revision ID. We must not
+        leave it out of the file without a word. See T277832.
+        """
+        HashtagFactory(hashtag="hashtag1", rev_id=None, domain="en.wikipedia.org")
+        request = RequestFactory().get(self.download_url, {"query": "hashtag1"})
+
+        for view in [views.csv_download, views.json_download]:
+            response = view(request)
+            self.assertEqual(response.status_code, 302)
+            self.assertIn("query=hashtag1", response.url)
+
+    def test_hashtags_download_refusals_are_not_cached(self):
+        """
+        A cache must not keep the refusal, because the next try may work.
+        """
+        request = RequestFactory().get(self.download_url, {"query": "hashtag1"})
+
+        for view in [views.csv_download, views.json_download]:
+            with patch("hashtagsv2.hashtags.views.EXPORT_VERIFY_LIMIT", 2):
+                response = view(request)
+
+            self.assertEqual(response.status_code, 302)
+            self.assertIn("no-store", response["Cache-Control"])
+
     def test_hashtags_downloads_are_not_cached(self):
         """
         A cache must not keep a download, because the wiki can hide an edit
@@ -637,9 +666,15 @@ class RevisionVisibilityTest(TestCase):
 
     def test_api_error_response_removes_rows(self):
         # MediaWiki reports some errors with HTTP 200 and an error object.
+        # mwapi turns that into an APIError.
         HashtagFactory(hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org")
-        object_list = self._results({"error": {"code": "badvalue"}})
-        self.assertEqual(len(object_list), 0)
+        with patch(
+            "hashtagsv2.hashtags.visibility._query_wiki",
+            side_effect=mwapi.errors.APIError("badvalue", "info", "content"),
+        ):
+            request = self.factory.get(self.url, {"query": "hashtag1"})
+            response = views.Index.as_view()(request)
+            self.assertEqual(len(response.context_data["object_list"]), 0)
 
     def test_malformed_response_removes_rows(self):
         HashtagFactory(hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org")
@@ -683,6 +718,59 @@ class RevisionVisibilityTest(TestCase):
                 response = views.Index.as_view()(request)
                 self.assertEqual(len(response.context_data["object_list"]), 0)
                 query.assert_not_called()
+
+    def test_time_budget_keeps_room_for_one_call(self):
+        """
+        We do not start a call that the budget cannot hold.
+
+        A wiki can take up to API_WORST_CASE_CALL_S to answer. A call that
+        starts later than that before the deadline can run past the gunicorn
+        worker timeout, which gives the user a 502 instead of the message
+        that tells them what happened. See T277832.
+        """
+        HashtagFactory(hashtag="hashtag1", rev_id=1, domain="en.wikipedia.org")
+        # Time is left, but not enough for the worst case of one call.
+        budget = visibility.API_WORST_CASE_CALL_S / 2
+        with patch("hashtagsv2.hashtags.visibility.API_TOTAL_BUDGET_S", budget):
+            with patch("hashtagsv2.hashtags.visibility._query_wiki") as query:
+                request = self.factory.get(self.url, {"query": "hashtag1"})
+                response = views.Index.as_view()(request)
+                self.assertEqual(len(response.context_data["object_list"]), 0)
+                query.assert_not_called()
+
+    def test_row_with_no_revision_id_makes_the_check_incomplete(self):
+        """
+        We report a row that we cannot check, instead of dropping it quietly.
+
+        A log action, such as a page move, has no revision ID, so we have no
+        key to ask the wiki about. A download refuses when it sees this. See
+        T277832.
+        """
+        rows = [
+            HashtagFactory(
+                hashtag="hashtag1", rev_id=None, domain="en.wikipedia.org"
+            ).get_values_list()
+        ]
+        with patch("hashtagsv2.hashtags.visibility._query_wiki") as query_wiki:
+            rows_to_show, removed, complete = visibility.redact(rows)
+
+        # There is no revision to ask about, so we make no call at all.
+        query_wiki.assert_not_called()
+        self.assertEqual(rows_to_show, [])
+        self.assertEqual(removed, 1)
+        self.assertFalse(complete)
+
+    def test_one_session_per_wiki(self):
+        """
+        We keep one API session per wiki, so that batches share a connection.
+        """
+        visibility._get_session.cache_clear()
+        try:
+            first = visibility._get_session("en.wikipedia.org")
+            self.assertIs(visibility._get_session("en.wikipedia.org"), first)
+            self.assertIsNot(visibility._get_session("commons.wikimedia.org"), first)
+        finally:
+            visibility._get_session.cache_clear()
 
     def test_redact_reports_a_complete_check(self):
         """
