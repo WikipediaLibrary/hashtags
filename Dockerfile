@@ -1,5 +1,5 @@
 # Dockerfile
-FROM quay.io/wikipedialibrary/python:3.11-bullseye-updated AS base
+FROM quay.io/wikipedialibrary/python:3.11-trixie-updated AS base
 ENV PYTHONUNBUFFERED=1
 RUN apt update && apt install -y default-mysql-client && rm -rf /var/lib/apt/lists/* && rm -f /var/log/apt/*
 COPY requirements/* .

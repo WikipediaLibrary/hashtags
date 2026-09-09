@@ -9,6 +9,11 @@ import db
 
 import mwapi
 
+# stream.wikimedia.org and the wiki APIs enforce the WMF User-Agent policy
+# and reject the sseclient/mwapi default UAs.
+# https://meta.wikimedia.org/wiki/User-Agent_policy
+USER_AGENT = "hashtags/0.1 (https://github.com/WikipediaLibrary/hashtags)"
+
 API_REQUEST_TIMEOUT_S = 10.0
 
 # An arbitrary limit to how many times we follow the "continue" response in
@@ -20,7 +25,7 @@ MAX_IMAGEINFO_CONTINUES = 50
 @functools.lru_cache(maxsize=None)
 def get_wiki_session(domain):
     return mwapi.Session(
-        "https://{}/".format(domain), "hashtags", timeout=API_REQUEST_TIMEOUT_S
+        "https://{}/".format(domain), USER_AGENT, timeout=API_REQUEST_TIMEOUT_S
     )
 
 
@@ -138,6 +143,7 @@ for event in EventSource(
     # A tuple value sets each respective value independently.
     # https://requests.readthedocs.io/en/latest/user/advanced/#timeouts
     timeout=(3.05, 7),
+    headers={"User-Agent": USER_AGENT},
 ):
     if event.event == "message":
         try:
