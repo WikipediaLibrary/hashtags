@@ -4,7 +4,7 @@ import json
 from sseclient import SSEClient as EventSource
 import sys
 
-from common import valid_hashtag, valid_edit, hashtag_match
+from common import valid_hashtag, valid_edit, hashtag_match, is_canary
 import db
 
 import mwapi
@@ -149,6 +149,9 @@ for event in EventSource(
         try:
             change = json.loads(event.data)
         except ValueError:
+            continue
+
+        if is_canary(change):
             continue
 
         if "comment" in change:
