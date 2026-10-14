@@ -71,6 +71,11 @@ def valid_hashtag(hashtag):
     return True
 
 
+def is_canary(change):
+    # Artificial heartbeat events, which must be discarded.
+    return change.get("meta", {}).get("domain") == "canary"
+
+
 def valid_edit(change):
 
     # Exclude Wikidata for now, just far too much data
